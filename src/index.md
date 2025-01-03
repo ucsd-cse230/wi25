@@ -83,6 +83,8 @@ you can know roughly where we are headed.
 
 The typical due dates are that **assignments** and **quizzes** are due Friday evenings.
 
+[Code](https://github.com/ucsd-cse230/wi25-code)
+
 ### Week 1 - Basics and Induction
 
 - Expressions and Types
