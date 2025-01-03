@@ -1,6 +1,6 @@
 # Readme 
 
-This document is live [here](https://ucsd-cse231.github.io/sp24/)
+This document is live [here](https://ucsd-cse230.github.io/wi25/)
 
 ## How to build
 
