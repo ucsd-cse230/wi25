@@ -31,7 +31,8 @@ Students will be evaluated on the basis of 4-6 programming (proving!) assignment
 
 ## Prerequisites
 
-Basic functional programming e.g. as taught in UCSD CSE 130 using
+Basic functional programming e.g. as taught in
+[UCSD CSE 130](https://ucsd-cse130.github.io/wi24) using
 languages like Haskell, OCaml, Scala, Rust, and undergraduate level
 discrete mathematics, i.e. logic, sets, relations.
 
@@ -84,37 +85,38 @@ The typical due dates are that **assignments** and **quizzes** are due Friday ev
 
 ### Week 1 - Basics and Induction
 
-Basics: Datatypes, Functions, and Proofs
-Recursion: Numbers, Lists, and Induction (Ch02)
+- Expressions and Types
+- Datatypes and Polymorphism 
+- Recursion and Induction (Ch02)
 
 ### Week 2 - Expressions and Evidence
 
-Compilation: Expressions, Stack Machines and Equivalence (Ch03)
-Evidence: Induction on Evidence (Ch04)
+- Compiling Expressions to Stack Machines (Ch03)
+- Induction on Evidence (Ch04)
 
 ### Week 3 - Big Step Semantics
 
-IMP: States, Expressions, Commands, Transitions
-Program Equivalence (Ch07)
+- Imperative Programs: States, Commands, Transitions
+- Program Equivalence (Ch07)
 
 ### Week 4 - Small Step Semantics
 
-IMP: Small step semantics
-Preservation and Progress (Ch09)
+- Preservation and Progress (Ch09)
 
 ### Week 5, 6 - Axiomatic Semantics
 
-Assertions, Floyd-Hoare Logic, Soundness of FH Logic (Ch12)
-Verification Conditions
+- Assertions, Floyd-Hoare Logic, Soundness (Ch12)
+- Verification Conditions and Automatic Verification
 
 ### Week 7, 8 - Simply Typed Lambda Calculus
 
-Terms, Types, and Typing Rules
-Denotational Semantics and Type Soundness
+- Terms, Types, and Typing Rules
+- Denotational Semantics and Type Soundness
 
 ### Week 9, 10 - Automated Verification
 
-Satisfiability Modulo Theories, Refinement Types, Flux
+- Satisfiability Modulo Theories
+- Flux: Refinement Type based verification for Rust
 
 ## Grading
 
