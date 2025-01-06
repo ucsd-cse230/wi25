@@ -1,4 +1,4 @@
-![doodle](./doodle.jpg)
+![doodle](./doodle.png)
 
 # CSE 230: Principles of Programming Languages CSE 230
 
