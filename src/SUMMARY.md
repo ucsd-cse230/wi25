@@ -4,8 +4,10 @@
 
 # Lectures
 
-- [Basics and Induction](./lectures/01-basics.md)
-- [Expressions and Evidence]()
+- [Expressions & Types](./lectures/L01Expressions.md)
+- [Datatypes & Proofs](./lectures/L02Datatypes.md)
+- [Recursion & Induction]()
+- [Evidence]()
 - [Big Step Semantics]()
 - [Small Step Semantics]()
 - [Axiomatic Semantics]()
@@ -14,4 +16,4 @@
 
 # Assignments
 
-- [Assignment 1 - Adder](./src/week1/index.md)
+- [Assignment 1 - Proof by Induction]()
