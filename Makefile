@@ -19,6 +19,12 @@ $(DST_DIR):
 $(DST_DIR)/%.md: $(SRC_DIR)/%.lean | $(DST_DIR)
 	scripts/convert.hs $< > $@
 
+upload: all
+	git commit -a -m "update"
+	git push origin main
+
+
+
 # Clean target
 .PHONY: clean
 clean:
