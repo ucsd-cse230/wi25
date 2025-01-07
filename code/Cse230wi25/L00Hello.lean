@@ -248,8 +248,8 @@ You can **define** functions...
 
 def sum (n: Nat) : Nat :=
   match n with
-  | 0 => 0
-  | m + 1 => m + 1 + sum m
+  | 0 => 0                  -- if n is 0, return 0
+  | m + 1 => m + 1 + sum m  -- if n is m+1, return (m+1) + sum m
 
 /- @@@
 You can **evaluate** i.e. "run" them ...
