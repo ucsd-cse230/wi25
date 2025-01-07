@@ -130,16 +130,16 @@ Your grade will be calculated from **assignments**, **exam**, and **participatio
   Credit is given for reasonable effort in engaging with the material
   from the day on the handout.
 
-- **Programming Assignments (50%)**
+- **Programming Assignments (40%)**
   There will be a total of 5-6 programming assigments, to be _done_
   in pairs but _submitted_ individually.
 
-- **Final Exam (35%)**
-  During finals week, details TBD.
+- **In Class Exams (45%)**
+  We will have three "in-class exams" **Th 1/30** and **Tu 2/25** and **Th 3/13** 
+  each worth 15% of the grade.
 
 **Comprehensive Exam**: For graduate students using this course for a
-comprehensive exam requirement, you must get "A" achievement on the
-final exams.
+comprehensive exam requirement, you must get "A" achievement on the exams.
 
 ## Policies
 
