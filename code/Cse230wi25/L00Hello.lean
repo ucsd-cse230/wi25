@@ -142,7 +142,7 @@ Rigorous specification, analysis of PL/Programs...
 
 ## Why bother with Formal Semantics?
 
-![Thinking Fast and Slow](../static/thinking-fast-slow.jpg)
+![Thinking Fast and Slow](../static/thinking-fast-and-slow.jpg)
 
 <br>
 <br>
