@@ -1,0 +1,10 @@
+[book]
+language = "en"
+multilingual = false
+src = "src"
+title = "Principles of Programming Languages - W25"
+
+[output.html]
+additional-js = [
+  "assets/lean.min.js",
+]
