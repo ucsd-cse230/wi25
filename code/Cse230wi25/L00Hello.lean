@@ -224,19 +224,26 @@ LLMs ==> more *code* ==> more *bugs*
 
 - Used in academia and industry for formal verification
 
-Two main features for CSE 230:
+**Two main features for CSE 230**
 
 - Helps *define* and *prove* things about languages and programs
 
-- Example of fancy *modern* programming language
+- Example of *state-of-the-art* programming language
 
-Here's a quick taste of lean...
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
-@@@ -/
+## A quick taste of lean...
 
-
-/- @@@
-You can define functions...
+You can **define** functions...
 @@@ -/
 
 def sum (n: Nat) : Nat :=
@@ -245,20 +252,20 @@ def sum (n: Nat) : Nat :=
   | m + 1 => m + 1 + sum m
 
 /- @@@
-You can *evaluate* i.e. "run" them ...
+You can **evaluate** i.e. "run" them ...
 @@@ -/
 
 #eval sum 10
 
 /- @@@
-You can *automatically prove* simple facts about them...
+You can **automatically check** simple facts about them...
 @@@ -/
 
 theorem sum_10_eq_55 : sum 10 = 55 :=
   rfl
 
 /- @@@
-And finally, you can *help lean construct proofs* for more complicated facts ...
+And finally, you can **write proofs** for more complicated facts ...
 @@@ -/
 
 theorem sum_eq : ∀ (n: Nat),  2 * sum n = n * (n + 1) := by
@@ -271,6 +278,15 @@ theorem sum_eq : ∀ (n: Nat),  2 * sum n = n * (n + 1) := by
     simp_arith [sum, Nat.mul_add, ih, Nat.mul_comm]
 
 /- @@@
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ## Logistics
 
@@ -368,8 +384,6 @@ comprehensive exam requirement, you must get "A" achievement on the exams.
 <br>
 <br>
 <br>
-<br>
-<br>
 
 ## Assignments (5-6)
 
@@ -378,5 +392,14 @@ comprehensive exam requirement, you must get "A" achievement on the exams.
 
 **Assignment 0**
 Fill out [this form to link UCSD ID and Github](https://forms.gle/RaMSzzKCkgDYfKQYA)
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+And now, let the games begin...!
 
 @@@ -/
