@@ -29,7 +29,7 @@ Increased dependence **implies** increased need for analysis
 
 - **Safety** Will this code _crash_?
 - **Security** Will this code broadcast my _social security number_?
-- **Performance** Will this code run in the appropriate time/space constraints?
+- **Performance** Will this code run in the appropriate time/space _constraints_?
 
 <br>
 <br>
@@ -39,24 +39,6 @@ Increased dependence **implies** increased need for analysis
 <br>
 <br>
 <br>
-
-## Computation is **Specified** by Programming Languages
-
-Increased dependence **implies** increased need for analysis
-
-- **Safety** Will this code _crash_?
-- **Security** Will this code broadcast my _social security number_?
-- **Performance** Will this code run in the appropriate time/space constraints?
-
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-
 
 ## CSE 230: PL/Programs are mathematical objects
 
@@ -79,29 +61,17 @@ Rigorous specification, analysis of PL/Programs...
 
 **Goal: Mechanized Formal Semantics**
 
-– Intellectual and Algorithmic tools for reasoning about program behavior
-
-<br>
-<br>
-<br>
+Intellectual and Algorithmic tools for reasoning about program behavior
 
 ### Semantics
 
 - What does a program **mean**?
 - What does a program **do**?
 
-<br>
-<br>
-<br>
-
 ### Formal
 
 - We will **define** these objects mathematically
 - We will learn how to **prove** things about these objects
-
-<br>
-<br>
-<br>
 
 ### Mechanized
 
@@ -110,6 +80,18 @@ Rigorous specification, analysis of PL/Programs...
 <br>
 <br>
 <br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+
 
 ## Why bother with Formal Semantics?
 
