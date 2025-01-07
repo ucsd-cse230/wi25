@@ -338,7 +338,7 @@ You _may_ be able to take 130 if you're unfamiliar with the above but ...
 
 Your grade will be calculated from **assignments**, **exam**, and **participation**
 
-- **Participation Quizzes (15%)**
+- **Handouts (15%)**
   Most lectures will come with a 1-2 page handout, and you can submit
   the handout any time up until the start of the next lecture.
   Credit is given for reasonable effort in engaging with the material

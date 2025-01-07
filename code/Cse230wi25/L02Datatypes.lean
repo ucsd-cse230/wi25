@@ -226,16 +226,6 @@ the inputs!
 
 theorem and_comm : ∀ (b1 b2 : Bool), and b1 b2 = and b2 b1 := by
   sorry
-  -- intros b1 b2
-  -- cases b1
-  -- . case false =>
-  --     cases b2
-  --     . case false => rfl
-  --     . case true => rfl
-  -- . case true =>
-  --     cases b2
-  --     . case false => rfl
-  --     . case true => rfl
 
 /- @@@
 
@@ -248,21 +238,18 @@ line and see how the goals change in the `Lean Infoview` panel.
 @@@ -/
 
 theorem and_comm' : ∀ (b1 b2 : Bool), and b1 b2 = and b2 b1 := by
-  intros b1 b2
-  cases b1 <;> cases b2 <;> rfl
+  -- use the <;> tactic combinator
+  sorry
 
-/- **Disjunction**
+/- @@@
 
-   Lets write an `or` function that
-   - takes two `Bool`s and
-   - returns a `Bool` that is `true` if *either* is `true` and `false` otherwise.
+**Disjunction** Lets write an `or` function that
+- takes two `Bool`s and
+- returns a `Bool` that is `true` if *either* is `true` and `false` otherwise.
 
--/
+@@@ -/
 
-def or (b1 b2: Bool) : Bool :=
-  match b1, b2 with
-  | Bool.false, Bool.false => Bool.false
-  | _         , _          => Bool.true
+def or (b1 b2: Bool) : Bool := sorry
 
 /- @@@
 
@@ -277,7 +264,11 @@ theorem or_comm : ∀ (b1 b2 : Bool), or b1 b2 = or b2 b1 := by
 end MyBool
 
 
-/- **Recursion** -/
+/- @@@
+
+## Recursion**
+
+@@@ -/
 
 namespace MyNat
 
@@ -308,5 +299,8 @@ theorem add_zero (n: Nat) : add n zero = n := by
 
 end MyNat
 
+/- @@@
 
-/- **Polymorphism** -/
+## Polymorphism
+
+@@@ -/
