@@ -194,7 +194,7 @@ LLMs ==> more *code* ==> more *bugs*
 <br>
 <br>
 
-## Lean
+## Medium of instruction: `Lean`
 
 ![Lean: Programming Language and Theorem Prover](../static/lean-logo.png)
 
