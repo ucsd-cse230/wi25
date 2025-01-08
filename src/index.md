@@ -45,14 +45,14 @@ discrete mathematics, i.e. logic, sets, relations.
 
 ## Staff
 
-|      |                                               | Office Hours      |
-| :--- | :-------------------------------------------- | :---------------- |
-| Prof | [Ranjit Jhala](https://ranjitjhala.github.io) | Tu, Th 2-3p, 3110 |
-| TA   | Matthew Kolosick                              |                   |
-| TA   | Nico Lehmann                                  |                   |
-| TA   | Naomi Smith                                   |                   |
-| TA   | Kyle Thompson                                 | M 1-2pm, B260a    |
-| TA   | Mingyao Shen                                  | W 12-1pm, B240A   |
+|      |                                               | Office Hours                                                                                    |
+| :--- | :-------------------------------------------- | :---------------------------------------------------------------------------------------------- |
+| Prof | [Ranjit Jhala](https://ranjitjhala.github.io) | Tu, Th 2-3p, 3110                                                                               |
+| TA   | Matthew Kolosick                              |                                                                                                 |
+| TA   | Nico Lehmann                                  | Th 3:30-5pm (Zoom [link in canvas](https://canvas.ucsd.edu/courses/62909)), F 9:30-11am (B240A) |
+| TA   | Naomi Smith                                   |                                                                                                 |
+| TA   | Kyle Thompson                                 | M 1-2pm, B260a                                                                                  |
+| TA   | Mingyao Shen                                  | W 12-1pm, B240A                                                                                 |
 
 Office hours are concentrated on Wed, Thu, Fri, since most
 assignments are due Friday evening. Please check the calendar
