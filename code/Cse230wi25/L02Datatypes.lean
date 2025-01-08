@@ -1,4 +1,5 @@
 
+
 /- @@@
 # Datatypes and Recursion
 
@@ -24,7 +25,7 @@ see how it's done.
 
 namespace MyBool
 
-inductive Bool where
+inductive Bool : Type where
   | false : Bool
   | true  : Bool
   deriving Repr
@@ -73,13 +74,24 @@ Our first "theorem" ... let us prove that `neg true` _is_ `false` by
 
 For now, lets just write `by sorry` for the "proof".
 
+
+
 @@@ -/
 
+def neg_b_neq : ∀ (b:Bool), ¬ (neg b = b) := by
+  intros b
+  cases b <;> simp [neg]
+
+def neg_neg_b_eq : ∀ (b:Bool), neg (neg b) = b := by
+  intros b
+  cases b <;> simp [neg]
+
 def neg_true_eq_false : neg Bool.true = Bool.false := by
-  sorry
-  -- rfl
+  rfl
 
 /- @@@
+
+foo <;> bar
 
 ## Goals
 
@@ -201,6 +213,13 @@ def neg_neg_2 : ∀ (b : Bool), neg (neg b) = b := by
 
 
 /- @@@
+def and (b1 b2 : Bool) := ...
+
+def or (b1 b2 : Bool) := ...
+
+and_comm: ∀ (b1 b2 : Bool), and b1 b2 = and b2 b1
+or_comm : ∀ (b1 b2 : Bool), or b1 b2 = or b2 b1
+
 
 **Conjunction** Lets write an `and` function that
 - takes two `Bool`s and

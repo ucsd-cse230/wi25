@@ -2,7 +2,7 @@
 
 # CSE 230: Principles of Programming Languages CSE 230
 
-[Resources](#resources) - [Schedule](#schedule) - [Grading](#grading) - [Policies](#policies)
+[Resources](#resources) - [Assignments](#assignments) - [Schedule](#schedule) - [Grading](#grading) - [Policies](#policies)
 
 ## Summary
 
@@ -39,20 +39,20 @@ discrete mathematics, i.e. logic, sets, relations.
 ## Basics
 
 - **Lecture:** _PRICE Center Theatre_ TuTh 12:30p-1:50p
-- **Discussion:** _CENTER 212_ Fr 2:00-2:50pm
 - **Final Exam:** 03/18/2025 Tu 11:30a-2:29p
 - **Podcasts:** [podcast.ucsd.edu](https://podcast.ucsd.edu/watch/wi25/cse230_a00)
 - **Piazza:** [Piazza](https://piazza.com/ucsd/winter2025/cse230)
 
 ## Staff
 
-|      |                                               | Office Hours |
-| :--- | :-------------------------------------------- | :----------- |
-| Prof | [Ranjit Jhala](https://ranjitjhala.github.io) |              |
-| TA   | Matthew Kolosick                              |              |
-| TA   | Nico Lehmann                                  |              |
-| TA   | Naomi Smith                                   |              |
-| TA   | Kyle Thompson                                 |              |
+|      |                                               | Office Hours      |
+| :--- | :-------------------------------------------- | :---------------- |
+| Prof | [Ranjit Jhala](https://ranjitjhala.github.io) | Tu, Th 2-3p, 3110 |
+| TA   | Matthew Kolosick                              |                   |
+| TA   | Nico Lehmann                                  |                   |
+| TA   | Naomi Smith                                   |                   |
+| TA   | Kyle Thompson                                 | M 1-2pm, B260a    |
+| TA   | Mingyao Shen                                  | W 12-1pm, B240A   |
 
 Office hours are concentrated on Wed, Thu, Fri, since most
 assignments are due Friday evening. Please check the calendar
@@ -66,7 +66,11 @@ office hours.
 
 The course is loosely based on [Concrete Semantics](http://www.concrete-semantics.org/)
 but there is no official textbook; we will link to any relevant resources that may be
-needed to supplement the lecture material. Some useful links are:
+needed to supplement the lecture material.
+
+- [Code from lecture](https://github.com/ucsd-cse230/wi25/tree/main/code)
+
+Some other useful links are:
 
 - [Lean](https://lean-lang.org/)
 - [Theorem Proving in Lean4](https://lean-lang.org/theorem_proving_in_lean4/)
@@ -74,6 +78,11 @@ needed to supplement the lecture material. Some useful links are:
 - [Software Foundations](https://softwarefoundations.cis.upenn.edu/)
 - [Hitchhikers Guide to Logical Verification](https://lean-forward.github.io/hitchhikers-guide/2023/)
 - [PL Foundations in Agda](https://plfa.github.io/)
+
+## Assignments
+
+1. [Assignment 0 - Github/ID](https://forms.gle/RaMSzzKCkgDYfKQYA)
+2. [Assignment 1 - Proof by Induction]()
 
 ## Schedule
 
@@ -83,12 +92,10 @@ you can know roughly where we are headed.
 
 The typical due dates are that **assignments** and **quizzes** are due Friday evenings.
 
-[Code](https://github.com/ucsd-cse230/wi25-code)
-
 ### Week 1 - Basics and Induction
 
 - Expressions and Types
-- Datatypes and Polymorphism 
+- Datatypes and Polymorphism
 - Recursion and Induction (Ch02)
 
 ### Week 2 - Expressions and Evidence
@@ -135,7 +142,7 @@ Your grade will be calculated from **assignments**, **exam**, and **participatio
   in pairs but _submitted_ individually.
 
 - **In Class Exams (45%)**
-  We will have three "in-class exams" **Th 1/30** and **Tu 2/25** and **Th 3/13** 
+  We will have three "in-class exams" **Th 1/30** and **Tu 2/25** and **Th 3/13**
   each worth 15% of the grade.
 
 **Comprehensive Exam**: For graduate students using this course for a

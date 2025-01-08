@@ -14,8 +14,3 @@
 - [Axiomatic Semantics]()
 - [Simply Typed Lambda Calculus]()
 - [Automated Verification]()
-
-# Assignments
-
-- [Assignment 0 - Github/ID](https://forms.gle/RaMSzzKCkgDYfKQYA)
-- [Assignment 1 - Proof by Induction]()
