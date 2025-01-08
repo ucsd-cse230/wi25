@@ -213,14 +213,6 @@ def neg_neg_2 : ∀ (b : Bool), neg (neg b) = b := by
 
 
 /- @@@
-def and (b1 b2 : Bool) := ...
-
-def or (b1 b2 : Bool) := ...
-
-and_comm: ∀ (b1 b2 : Bool), and b1 b2 = and b2 b1
-or_comm : ∀ (b1 b2 : Bool), or b1 b2 = or b2 b1
-
-
 **Conjunction** Lets write an `and` function that
 - takes two `Bool`s and
 - returns a `Bool` that is `true` if *both* are `true` and `false` otherwise.
@@ -287,6 +279,12 @@ end MyBool
 
 ## Recursion**
 
+`Bool` is a rather simple type that has just *two* elements --- `true` and `false`.
+
+Pretty much all proofs about `Bool` can be done by splitting `cases` on the relevant `Bool`
+values and then running `rfl` (i.e. via a giant "case analysis").
+
+Next, lets look at a more interesting type, which has an **infinite** number of values.
 @@@ -/
 
 namespace MyNat
@@ -298,10 +296,37 @@ inductive Nat where
 
 open Nat
 
-def n0 : Nat := zero
-def n1 : Nat := succ zero
-def n2 : Nat := succ (succ zero)
+/- @@@
+
+## Zero, One, Two, Three, ... infinity
+
+Unlike `Bool` there are *infinitely* many `Nat` values.
+
+@@@ -/
+
+def n0 : Nat :=                  zero
+def n1 : Nat :=             succ zero
+def n2 : Nat :=       succ (succ zero)
 def n3 : Nat := succ (succ (succ zero))
+
+/- @@@
+
+This has *two* related consequences.
+
+First, we cannot write interesting functions over `Nat`
+just by brute-force *enumerating* the inputs and outputs
+as we did with `and` and `or`; instead we will have to
+use **recursion**.
+
+Second, we cannot write interesting proofs over `Nat`
+just by brute-force *case-splitting* over the values
+as we did with `and_comm` and `or_comm`; instead we will
+have to use **induction**.
+
+## Addition
+
+Lets write a function to *add* two `Nat` values.
+@@@ -/
 
 def add (n m: Nat) : Nat :=
   match n with
@@ -310,11 +335,123 @@ def add (n m: Nat) : Nat :=
 
 example : add n1 n2 = n3 := by rfl
 
-theorem add_zero (n: Nat) : add n zero = n := by
-  induction n
-  . case zero => rfl
-  . case succ => simp [add, *]
+/- @@@
+## Adding Zero
 
+Next, lets try to prove some simple facts about `add` for example
+@@@ -/
+
+theorem add_zero_left : ∀ (n: Nat), add zero n = n := by
+  intros
+  rfl
+
+/- @@@
+The proof of `add_zero_left` is super easy because it is literally
+(part of) the **definition** of `add` which tells `lean` that it obeys
+two **equations**
+
+    add zero      m = m
+    add (succ n') m = succ (add n' m)
+
+So the `rfl` applies the first equation and boom we're done.
+
+## Adding Zero on the _Right_
+
+However, lets see what happens if we flip the order of the arguments,
+so that the *second* argument is `zero`
+
+@@@ -/
+
+theorem add_zero' : ∀ (n: Nat), add n zero = n := by
+  intros n
+  sorry
+
+/- @@@
+Boo! Now the proof fails because the equation does not apply!
+
+## "Calculation" or "Equational Reasoning"
+
+In fact, lets us try to see *why* the theorem is even true,
+slowly working our way up the `Nat` numbers.
+
+```
+  add zero  zero
+    { by def of add }
+    ===> zero                     ... (0)
+
+  add (succ zero) zero
+    { by def of add }
+    ===> succ (add zero zero)
+    { by (0) }
+    ===> succ zero                ... (1)
+
+  add (succ (succ (zero))) zero
+    { by def }
+    ===> succ (add (succ zero) zero)
+    { by (1) }
+    ===> succ (succ zero)         ... (2)
+
+  add (succ (succ (succ (zero)))) zero
+    { by def }
+    ===> succ (add (succ (succ zero)) zero)
+    { by (2) }
+    ===> succ (succ (succ zero))  ... (3)
+```
+
+## `calc` mode
+
+`lean` has a neat `calc` mode that lets us write
+the above proofs (except, they are actually *checked!*)
+
+@@@ -/
+
+theorem add_0 : add zero zero = zero := by
+  calc
+    add zero zero = zero := by simp [add] -- just apply the
+
+theorem add_1 : add (succ zero) zero = succ zero := by
+  calc
+    add (succ zero) zero
+      = succ (add zero zero) := by simp [add]
+    _ = succ zero            := by simp [add_0]
+
+theorem add_2 : add (succ (succ zero)) zero = succ (succ zero) := by
+  calc
+    add (succ (succ zero)) zero
+      = succ (add (succ zero) zero) := by simp [add]
+    _ = succ (succ zero)            := by simp [add_1]
+
+theorem add_3 : add (succ (succ (succ zero))) zero = succ (succ (succ zero)) := by
+  calc
+    add (succ (succ (succ zero))) zero
+      = succ (add (succ (succ zero)) zero) := by simp [add]
+    _ = succ (succ (succ zero))            := by simp [add_2]
+
+/-@@@
+
+## Proof by Induction
+
+Notice that *each* of the proofs above is basically the same:
+
+To prove the fact `add_{n+1}` we
+1. apply the *definition* of `add` and then
+2. *recursively* use the fact `add_{n}`!
+
+### Recursion
+
+Lets us *define* `add` **for each** `Nat` by *reusing* the definitions on **smaller** numbers
+
+### Induction
+
+Lets us *prove* `add_n` **for each** `Nat` by *reusing* the proofs on **smaller** numbers
+
+@@@ -/
+
+theorem add_zero : ∀ (n: Nat), add n zero = n := by
+  intros n
+  induction n
+  . case zero       => simp [add]
+  . case succ n' ih => simp [add, ih]
 
 end MyNat
 
@@ -323,3 +460,42 @@ end MyNat
 ## Polymorphism
 
 @@@ -/
+
+
+namespace MyList
+
+inductive List (α : Type) where
+  | nil : List α
+  | cons : α -> List α -> List α
+  deriving Repr
+
+open List
+
+def list0123 := cons 0 (cons 1 (cons 2 (cons 3 nil)))
+def list3210 := cons 3 (cons 2 (cons 1 (cons 0 nil)))
+
+def app {α : Type} (xs ys: List α) : List α :=
+  match xs with
+  | nil => ys
+  | cons x xs' => cons x (app xs' ys)
+
+example : app (cons 0 (cons 1 nil)) (cons 2 (cons 3 nil)) = list0123 := by
+  simp [app, list0123]
+
+
+example : app (cons 0 (cons 1 nil)) (cons 2 (cons 3 nil)) = cons 0 (cons 1 (cons 2 (cons 3 nil))) := rfl
+
+theorem app_nil : ∀ {α : Type} (xs: List α), app xs nil = xs := by
+  intro α xs
+  induction xs
+  case nil => rfl
+  case cons => simp [app, *]
+
+theorem app_assoc : ∀ {α : Type} (xs ys zs: List α), app (app xs ys) zs = app xs (app ys zs) := by
+  intros  α xs ys zs
+  induction xs
+  case nil => rfl
+  case cons => simp [app, *]
+
+
+end MyList

@@ -264,14 +264,14 @@ The below definitions of `inc'` and `add'` are equivalent to the above definitio
 
 @@@ -/
 
-def inc' (x : Int) : Int := x + 1
+def inc'' (x : Int) : Int := x + 1
 
-#eval inc' 10     -- 11
+#eval inc'' 10     -- 11
 
 
-def add' (x y : Nat) : Nat := x + y
+def add'' (x y : Nat) : Nat := x + y
 
-#eval add' 10 20  -- 30
+#eval add'' 10 20  -- 30
 
 /- @@@
 **EXERCISE** Write a function `max` that takes two `Nat`s and returns the maximum of the two.
