@@ -7,7 +7,7 @@
 - [Hello!](./lectures/L00Hello.md)
 - [Expressions & Types](./lectures/L01Expressions.md)
 - [Datatypes & Proofs](./lectures/L02Datatypes.md)
-- [Recursion & Induction]()
+- [Induction](./lectures/L03Induction.md)
 - [Evidence]()
 - [Big Step Semantics]()
 - [Small Step Semantics]()
