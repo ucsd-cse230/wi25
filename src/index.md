@@ -46,8 +46,9 @@ discrete mathematics, i.e. logic, sets, relations.
 
 ## Staff and Office Hours
 
+<<<<<<< HEAD
 - **Ranjit Jhala:**  Tu, Th 2-3p (3110)
-- **Nico Lehmann:**  Th 3:30pm-5:00pm (Zoom), Fr 9:30am-11am (B240A)
+- **Nico Lehmann:**  Th 3:30pm-5:00pm (Zoom), Fr 9:30am-11am (B240A), Zoom [link in canvas](https://canvas.ucsd.edu/courses/62909)
 - **Naomi Smith:**   Tu 12pm-3pm (Zoom) 
 - **Matt Kolosick:** Mo 10am-12pm (Zoom), Thursday 10am-11am (Zoom)
 - **Mingyao Shen:**  We 12-1p (B240A)
@@ -85,9 +86,10 @@ you can know roughly where we are headed.
 
 ### Week 1 - Basics and Induction
 
-- Expressions and Types
-- Datatypes and Polymorphism
-- Recursion and Induction (Ch02)
+- [Hello!](./lectures/L00Hello.md)
+- [Expressions and Types](./lectures/L01Expressions.md)
+- [Datatypes and Polymorphism](./lectures/L02Datatypes.md)
+- [Recursion and Induction](./lectures/L03Induction.md)
 
 ### Week 2 - Expressions and Evidence
 
