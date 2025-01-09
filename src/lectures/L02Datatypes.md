@@ -270,7 +270,7 @@ end MyBool
 
 
 
-## Recursion**
+## Recursion
 
 `Bool` is a rather simple type that has just *two* elements --- `true` and `false`.
 
