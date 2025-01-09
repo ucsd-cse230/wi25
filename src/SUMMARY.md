@@ -1,8 +1,9 @@
 
-
 # Summary
 
 [Principles of Programming Languages](./index.md)
+
+[Assignments](./assignments.md)
 
 # Lectures
 
@@ -17,5 +18,4 @@
 - [Simply Typed Lambda Calculus]()
 - [Automated Verification]()
 
-# [Assignments](./assignments.md)
 
