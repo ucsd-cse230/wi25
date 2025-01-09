@@ -1,3 +1,5 @@
+
+
 # Summary
 
 [Principles of Programming Languages](./index.md)
@@ -14,3 +16,6 @@
 - [Axiomatic Semantics]()
 - [Simply Typed Lambda Calculus]()
 - [Automated Verification]()
+
+# [Assignments](./assignments.md)
+
