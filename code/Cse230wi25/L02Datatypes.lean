@@ -1,5 +1,3 @@
-
-
 /- @@@
 # Datatypes and Recursion
 
@@ -459,8 +457,12 @@ end MyNat
 
 ## Polymorphism
 
-@@@ -/
+`lean` also lets you define polymorphic types and functions.
 
+For example, here is the definition of a `List` type that can
+hold any kind of value
+
+@@@ -/
 
 namespace MyList
 
@@ -471,31 +473,131 @@ inductive List (α : Type) where
 
 open List
 
-def list0123 := cons 0 (cons 1 (cons 2 (cons 3 nil)))
-def list3210 := cons 3 (cons 2 (cons 1 (cons 0 nil)))
+/- @@@
+
+## List constructors
+
+Just like `Nat` has a
+
+- "base-case" constructor (`zero`) and
+- "inductive-case" constructor (`succ`)
+
+A `List α` also has two constructors:
+
+- "base-case" constructor (`nil`) and
+- "inductive-case" constructor (`cons`)
+
+**NOTE:** You can type the `α` by typing a `\` + `a`
+
+So we can create different types of lists, e.g.
+@@@ -/
+
+
+def list0123 : List Int := cons 0 (cons 1 (cons 2 (cons 3 nil)))
+def list3210 : List Int := cons 3 (cons 2 (cons 1 (cons 0 nil)))
+def listtftf : List Bool := cons true (cons false (cons true (cons false nil)))
+
+/- @@@
+
+## Appending Lists
+
+Lets write a small function to _append_ or _concatenate_ two lists
+
+To do so, we `match` on the cases of the first list `xs`
+
+- If `xs` is `nil` then the result is just the second list
+- If `xs` is of the form `cons x xs'` then we recursively `app xs' ys` and `cons x` in front
+@@@ -/
 
 def app {α : Type} (xs ys: List α) : List α :=
   match xs with
   | nil => ys
   | cons x xs' => cons x (app xs' ys)
 
-example : app (cons 0 (cons 1 nil)) (cons 2 (cons 3 nil)) = list0123 := by
-  simp [app, list0123]
+/- @@@
+Just like with `add` the above definition tells `lean` that `app` satisfies two **equations**
+
+1. ∀ ys,       app nil ys = ys
+2. ∀ x xs' ys, app (cons x xs') ys = cons x (app xs' ys)
+@@@ -/
+
+example : app                 nil   (cons 2 (cons 3 nil)) =                 cons 2 (cons 3 nil)   := by rfl
+example : app         (cons 1 nil)  (cons 2 (cons 3 nil)) =         cons 1 (cons 2 (cons 3 nil))  := by rfl
+example : app (cons 0 (cons 1 nil)) (cons 2 (cons 3 nil)) = cons 0 (cons 1 (cons 2 (cons 3 nil))) := by rfl
+
+/- @@@
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 
-example : app (cons 0 (cons 1 nil)) (cons 2 (cons 3 nil)) = cons 0 (cons 1 (cons 2 (cons 3 nil))) := rfl
+## Digression: Implicit vs Explicit Parameters
+
+The `α` -- representing the `Type` of the list elements --
+is itself a *parameter* for the `app` function.
+
+- The `{..}` tells `lean` that it is an *implicit* parameter vs
+- The `(..)` we usually use for *explicit* parameters
+
+An **implicit parameter**, written `{...}` is a parameter that `lean`
+tries to _automatically infer_ at call-sites, based on the context, for example
+@@@ -/
+
+def add (n : Nat) (m : Nat) : Nat := n + m
+#eval add 3 4  -- Must provide both arguments: 7
+
+/- @@@
+An **explicit parameter**, written `(...)` is the usual kind where _you_
+have to provide at call-sites, for example
+@@@ -/
+
+def singleton {α : Type} (x: α) : List α := cons x nil
+#eval singleton 3
+
+/- @@@
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+## Induction on Lists
+
+`app` is sort of like `add` but for lists. For example, it is straightforward to prove
+"by definition" that
+
+@@@ -/
+
+theorem app_nil_left: ∀ {α : Type} (xs: List α), app nil xs = xs := by
+  intros
+  rfl
+
+/- @@@
+However, just like `add_zero` we need to use **induction** to prove that
+@@@ -/
 
 theorem app_nil : ∀ {α : Type} (xs: List α), app xs nil = xs := by
-  intro α xs
-  induction xs
-  case nil => rfl
-  case cons => simp [app, *]
+  sorry
+
+/- @@@
+Because in the `cons x xs'` case, we require the fact that `app_nil` holds
+for the _smaller_ tail `xs'`, i.e that `app xs' nil = xs'`, which the `induction`
+tactic will give us as the hypothesis that we can use.
+
+## Associativity of Lists
+@@@ -/
 
 theorem app_assoc : ∀ {α : Type} (xs ys zs: List α), app (app xs ys) zs = app xs (app ys zs) := by
-  intros  α xs ys zs
-  induction xs
-  case nil => rfl
-  case cons => simp [app, *]
-
+  sorry
 
 end MyList

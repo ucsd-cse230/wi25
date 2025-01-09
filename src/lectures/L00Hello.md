@@ -233,16 +233,27 @@ def sum (n: Nat) : Nat :=
   | m + 1 => m + 1 + sum m  -- if n is m+1, return (m+1) + sum m
 ```
 
+
+sum 5
+==>
+5 + sum 4
+==>
+5 + 4 + sum 3
+==>
+5 + 4 + 3 + 2 + 1 + sum 0
+==>
+5 + 4 + 3 + 2 + 1 + 0
+
 You can **evaluate** i.e. "run" them ...
 
 ```lean
-#eval sum 10
+#eval sum 100
 ```
 
 You can **automatically check** simple facts about them...
 
 ```lean
-theorem sum_10_eq_55 : sum 10 = 55 :=
+def i_had_soup_for_lunch : sum 100 = 5050 :=
   rfl
 ```
 
@@ -250,13 +261,13 @@ And finally, you can **write proofs** for more complicated facts ...
 
 ```lean
 theorem sum_eq : ∀ (n: Nat),  2 * sum n = n * (n + 1) := by
-  intros n
+  intro n
   induction n
   . case zero =>
     rfl
   . case succ =>
     rename_i m ih
-    simp_arith [sum, Nat.mul_add, ih, Nat.mul_comm]
+    simp_arith [sum, ih, Nat.mul_add, Nat.mul_comm]
 ```
 
 

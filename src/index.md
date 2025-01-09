@@ -4,6 +4,7 @@
 
 [Resources](#resources) - [Assignments](#assignments) - [Schedule](#schedule) - [Grading](#grading) - [Policies](#policies)
 
+
 ## Summary
 
 CSE 230 is an introduction to the Semantics of Programming Languages.
@@ -38,29 +39,21 @@ discrete mathematics, i.e. logic, sets, relations.
 
 ## Basics
 
-- **Lecture:** _PRICE Center Theatre_ TuTh 12:30p-1:50p
+- **Lecture:** _WLH 2005_ TuTh 12:30p-1:50p
 - **Final Exam:** 03/18/2025 Tu 11:30a-2:29p
 - **Podcasts:** [podcast.ucsd.edu](https://podcast.ucsd.edu/watch/wi25/cse230_a00)
 - **Piazza:** [Piazza](https://piazza.com/ucsd/winter2025/cse230)
 
-## Staff
+## Staff and Office Hours
 
-|      |                                               | Office Hours      |
-| :--- | :-------------------------------------------- | :---------------- |
-| Prof | [Ranjit Jhala](https://ranjitjhala.github.io) | Tu, Th 2-3p, 3110 |
-| TA   | Matthew Kolosick                              |                   |
-| TA   | Nico Lehmann                                  |                   |
-| TA   | Naomi Smith                                   |                   |
-| TA   | Kyle Thompson                                 | M 1-2pm, B260a    |
-| TA   | Mingyao Shen                                  | W 12-1pm, B240A   |
+- **Ranjit Jhala:**  Tu, Th 2-3p (3110)
+- **Nico Lehmann:**  Th 3:30pm-5:00pm (Zoom), Fr 9:30am-11am (B240A)
+- **Naomi Smith:**   Tu 12pm-3pm (Zoom) 
+- **Matt Kolosick:** Mo 10am-12pm (Zoom), Thursday 10am-11am (Zoom)
+- **Mingyao Shen:**  We 12-1p (B240A)
+- **Kyle Thompson:** Mo 1-2p (B260A)
 
-Office hours are concentrated on Wed, Thu, Fri, since most
-assignments are due Friday evening. Please check the calendar
-before you come in case there have been any changes. When you
-come to the office hour, we may ask you to put your name in
-the queue using the whiteboard. Read the description about
-[collaboration below](#policies) for some context about
-office hours.
+Please check the **CANVAS calendar** before you come in case there have been any changes. 
 
 ## Resources
 
@@ -81,16 +74,14 @@ Some other useful links are:
 
 ## Assignments
 
-1. [Assignment 0 - Github/ID](https://forms.gle/RaMSzzKCkgDYfKQYA)
-2. [Assignment 1 - Proof by Induction]()
+1. [Assignment X - Github/ID](https://forms.gle/RaMSzzKCkgDYfKQYA) **due 1/17**
+2. [Assignment 0 - Induction](https://classroom.github.com/a/wczyYqPo) **due 1/22**
 
 ## Schedule
 
 The schedule below outlines topics, due dates, and links to assignments. The
 schedule of lecture topics might change slightly, but I post a general plan so
 you can know roughly where we are headed.
-
-The typical due dates are that **assignments** and **quizzes** are due Friday evenings.
 
 ### Week 1 - Basics and Induction
 

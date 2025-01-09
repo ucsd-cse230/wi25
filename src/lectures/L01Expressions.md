@@ -28,7 +28,7 @@ and see the result by hovering over `#eval`.
 
 #eval 3 * 4
 
-#eval 1 + 2 * 3 + 4
+#check 1 + 2 * 3 + 4
 ```
 
 
@@ -71,8 +71,22 @@ in the expressions above.
 
 
 ```lean
-#eval 5 - 10
+#eval (5 - 10 : Int)
+
+
+/-
+
+(A) 5                 0%
+(B) 10                0%
+(C) -5                30%
+(D) 0                 5%
+(E) None of the above 17%
+
+-/
 ```
+
+
+
 
 
 
@@ -175,12 +189,16 @@ In lean, functions are also expressions, as in the λ-calculus.
 #check (fun (n : Nat) => n + 1)         -- Nat -> Nat
 #check (λ (n : Nat) => n + 1)           -- Nat -> Nat
 
-#check (fun (x y : Nat) => x + y)       -- Nat -> Nat -> Nat -> Nat
-#check (λ (x y : Nat) => x + y)         -- Nat -> Nat -> Nat -> Nat
+#check (fun (x y : Nat) => x + y)       -- Nat -> (Nat -> Nat)
+#check (λ (x y : Nat) => x + y)         -- Nat -> Nat -> Nat
+#check (λ (x : Nat) => λ (y: Nat) => x + y)         -- Nat -> Nat -> Nat
 ```
 
 
 **QUIZ** What is the *type* of the following expression?
+
+Nat -> Nat -> Bool
+
 
 ```lean
 #check (fun (x y : Nat) => x > y)
@@ -193,7 +211,19 @@ You can *call* a function by putting the arguments in front
 ```lean
 #eval (fun x => x + 1) 10
 
-#eval (fun x y => x + y) 10 20
+#eval ((fun x y => x + y) 100) 200
+
+/-
+((fun x y => x + y) 100) 200
+==
+((λ x => (λ y => x + y)) 100) 200
+==
+(( (λ y => 100 + y))) 200
+==
+100 + 200
+==
+300
+-/
 ```
 
 
@@ -209,16 +239,21 @@ You can *call* a function by putting the arguments in front
 Of course, it is more convenient to *name* functions as well, using `def`
 since naming allows us to *reuse* the function in many places.
 
+
 ```lean
 def inc := fun (x : Int)  => x + 1
+
+def inc'(x: Int) := x + 1
 
 #eval inc 10
 #eval inc 20
 -- #eval inc true  -- type error!
 
 def add := fun (x y : Nat) => x + y
+def add' (x y : Nat) := x + y
 
 #eval add 10 20
+#eval add' 10 20
 ```
 
 
@@ -228,14 +263,14 @@ The below definitions of `inc'` and `add'` are equivalent to the above definitio
 
 
 ```lean
-def inc' (x : Int) : Int := x + 1
+def inc'' (x : Int) : Int := x + 1
 
-#eval inc' 10     -- 11
+#eval inc'' 10     -- 11
 
 
-def add' (x y : Nat) : Nat := x + y
+def add'' (x y : Nat) : Nat := x + y
 
-#eval add' 10 20  -- 30
+#eval add'' 10 20  -- 30
 ```
 
 **EXERCISE** Write a function `max` that takes two `Nat`s and returns the maximum of the two.
@@ -247,6 +282,12 @@ def add' (x y : Nat) : Nat := x + y
     that creates a new string by placing its first argument between its second and third arguments.
 
 ```lean
+def mymax (x y : Nat) := if x > y then x else y
+
+def mymax3 (x y z : Nat) := mymax x (mymax y z)
+
+#eval mymax 67 92
+
 -- #eval joinStringsWith ", " "this" "that"  -- "this, that"
 -- #check joinStringsWith ", " -- **QUIZ** What is the type of the expression on the left?
 ```

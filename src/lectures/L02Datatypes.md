@@ -1,4 +1,3 @@
-
 # Datatypes and Recursion
 
 This material is based on sections 5,6 of [Functional Programming in Lean](https://lean-lang.org/functional_programming_in_lean/getting-to-know.html)
@@ -23,7 +22,7 @@ see how it's done.
 ```lean
 namespace MyBool
 
-inductive Bool where
+inductive Bool : Type where
   | false : Bool
   | true  : Bool
   deriving Repr
@@ -73,12 +72,23 @@ Our first "theorem" ... let us prove that `neg true` _is_ `false` by
 For now, lets just write `by sorry` for the "proof".
 
 
+
+
 ```lean
+def neg_b_neq : ∀ (b:Bool), ¬ (neg b = b) := by
+  intros b
+  cases b <;> simp [neg]
+
+def neg_neg_b_eq : ∀ (b:Bool), neg (neg b) = b := by
+  intros b
+  cases b <;> simp [neg]
+
 def neg_true_eq_false : neg Bool.true = Bool.false := by
-  sorry
-  -- rfl
+  rfl
 ```
 
+
+foo <;> bar
 
 ## Goals
 
@@ -196,7 +206,6 @@ def neg_neg_2 : ∀ (b : Bool), neg (neg b) = b := by
 ```
 
 
-
 **Conjunction** Lets write an `and` function that
 - takes two `Bool`s and
 - returns a `Bool` that is `true` if *both* are `true` and `false` otherwise.
@@ -263,6 +272,12 @@ end MyBool
 
 ## Recursion**
 
+`Bool` is a rather simple type that has just *two* elements --- `true` and `false`.
+
+Pretty much all proofs about `Bool` can be done by splitting `cases` on the relevant `Bool`
+values and then running `rfl` (i.e. via a giant "case analysis").
+
+Next, lets look at a more interesting type, which has an **infinite** number of values.
 
 ```lean
 namespace MyNat
@@ -273,24 +288,163 @@ inductive Nat where
   deriving Repr
 
 open Nat
+```
 
-def n0 : Nat := zero
-def n1 : Nat := succ zero
-def n2 : Nat := succ (succ zero)
+
+## Zero, One, Two, Three, ... infinity
+
+Unlike `Bool` there are *infinitely* many `Nat` values.
+
+
+```lean
+def n0 : Nat :=                  zero
+def n1 : Nat :=             succ zero
+def n2 : Nat :=       succ (succ zero)
 def n3 : Nat := succ (succ (succ zero))
+```
 
+
+This has *two* related consequences.
+
+First, we cannot write interesting functions over `Nat`
+just by brute-force *enumerating* the inputs and outputs
+as we did with `and` and `or`; instead we will have to
+use **recursion**.
+
+Second, we cannot write interesting proofs over `Nat`
+just by brute-force *case-splitting* over the values
+as we did with `and_comm` and `or_comm`; instead we will
+have to use **induction**.
+
+## Addition
+
+Lets write a function to *add* two `Nat` values.
+
+```lean
 def add (n m: Nat) : Nat :=
   match n with
   | zero => m
   | succ n' => succ (add n' m)
 
 example : add n1 n2 = n3 := by rfl
+```
 
-theorem add_zero (n: Nat) : add n zero = n := by
+## Adding Zero
+
+Next, lets try to prove some simple facts about `add` for example
+
+```lean
+theorem add_zero_left : ∀ (n: Nat), add zero n = n := by
+  intros
+  rfl
+```
+
+The proof of `add_zero_left` is super easy because it is literally
+(part of) the **definition** of `add` which tells `lean` that it obeys
+two **equations**
+
+    add zero      m = m
+    add (succ n') m = succ (add n' m)
+
+So the `rfl` applies the first equation and boom we're done.
+
+## Adding Zero on the _Right_
+
+However, lets see what happens if we flip the order of the arguments,
+so that the *second* argument is `zero`
+
+
+```lean
+theorem add_zero' : ∀ (n: Nat), add n zero = n := by
+  intros n
+  sorry
+```
+
+Boo! Now the proof fails because the equation does not apply!
+
+## "Calculation" or "Equational Reasoning"
+
+In fact, lets us try to see *why* the theorem is even true,
+slowly working our way up the `Nat` numbers.
+
+```
+  add zero  zero
+    { by def of add }
+    ===> zero                     ... (0)
+
+  add (succ zero) zero
+    { by def of add }
+    ===> succ (add zero zero)
+    { by (0) }
+    ===> succ zero                ... (1)
+
+  add (succ (succ (zero))) zero
+    { by def }
+    ===> succ (add (succ zero) zero)
+    { by (1) }
+    ===> succ (succ zero)         ... (2)
+
+  add (succ (succ (succ (zero)))) zero
+    { by def }
+    ===> succ (add (succ (succ zero)) zero)
+    { by (2) }
+    ===> succ (succ (succ zero))  ... (3)
+```
+
+## `calc` mode
+
+`lean` has a neat `calc` mode that lets us write
+the above proofs (except, they are actually *checked!*)
+
+
+```lean
+theorem add_0 : add zero zero = zero := by
+  calc
+    add zero zero = zero := by simp [add] -- just apply the
+
+theorem add_1 : add (succ zero) zero = succ zero := by
+  calc
+    add (succ zero) zero
+      = succ (add zero zero) := by simp [add]
+    _ = succ zero            := by simp [add_0]
+
+theorem add_2 : add (succ (succ zero)) zero = succ (succ zero) := by
+  calc
+    add (succ (succ zero)) zero
+      = succ (add (succ zero) zero) := by simp [add]
+    _ = succ (succ zero)            := by simp [add_1]
+
+theorem add_3 : add (succ (succ (succ zero))) zero = succ (succ (succ zero)) := by
+  calc
+    add (succ (succ (succ zero))) zero
+      = succ (add (succ (succ zero)) zero) := by simp [add]
+    _ = succ (succ (succ zero))            := by simp [add_2]
+```
+
+
+## Proof by Induction
+
+Notice that *each* of the proofs above is basically the same:
+
+To prove the fact `add_{n+1}` we
+1. apply the *definition* of `add` and then
+2. *recursively* use the fact `add_{n}`!
+
+### Recursion
+
+Lets us *define* `add` **for each** `Nat` by *reusing* the definitions on **smaller** numbers
+
+### Induction
+
+Lets us *prove* `add_n` **for each** `Nat` by *reusing* the proofs on **smaller** numbers
+
+
+```lean
+theorem add_zero : ∀ (n: Nat), add n zero = n := by
+  intros n
   induction n
-  . case zero => rfl
-  . case succ => simp [add, *]
-
+  . case zero       => simp [add]
+  . case succ n' ih => simp [add, ih]
 
 end MyNat
 ```
@@ -298,4 +452,149 @@ end MyNat
 
 ## Polymorphism
 
+`lean` also lets you define polymorphic types and functions.
+
+For example, here is the definition of a `List` type that can
+hold any kind of value
+
+
+```lean
+namespace MyList
+
+inductive List (α : Type) where
+  | nil : List α
+  | cons : α -> List α -> List α
+  deriving Repr
+
+open List
+```
+
+
+## List constructors
+
+Just like `Nat` has a
+
+- "base-case" constructor (`zero`) and
+- "inductive-case" constructor (`succ`)
+
+A `List α` also has two constructors:
+
+- "base-case" constructor (`nil`) and
+- "inductive-case" constructor (`cons`)
+
+**NOTE:** You can type the `α` by typing a `\` + `a`
+
+So we can create different types of lists, e.g.
+
+
+```lean
+def list0123 : List Int := cons 0 (cons 1 (cons 2 (cons 3 nil)))
+def list3210 : List Int := cons 3 (cons 2 (cons 1 (cons 0 nil)))
+def listtftf : List Bool := cons true (cons false (cons true (cons false nil)))
+```
+
+
+## Appending Lists
+
+Lets write a small function to _append_ or _concatenate_ two lists
+
+To do so, we `match` on the cases of the first list `xs`
+
+- If `xs` is `nil` then the result is just the second list
+- If `xs` is of the form `cons x xs'` then we recursively `app xs' ys` and `cons x` in front
+
+```lean
+def app {α : Type} (xs ys: List α) : List α :=
+  match xs with
+  | nil => ys
+  | cons x xs' => cons x (app xs' ys)
+```
+
+Just like with `add` the above definition tells `lean` that `app` satisfies two **equations**
+
+1. ∀ ys,       app nil ys = ys
+2. ∀ x xs' ys, app (cons x xs') ys = cons x (app xs' ys)
+
+```lean
+example : app                 nil   (cons 2 (cons 3 nil)) =                 cons 2 (cons 3 nil)   := by rfl
+example : app         (cons 1 nil)  (cons 2 (cons 3 nil)) =         cons 1 (cons 2 (cons 3 nil))  := by rfl
+example : app (cons 0 (cons 1 nil)) (cons 2 (cons 3 nil)) = cons 0 (cons 1 (cons 2 (cons 3 nil))) := by rfl
+```
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+## Digression: Implicit vs Explicit Parameters
+
+The `α` -- representing the `Type` of the list elements --
+is itself a *parameter* for the `app` function.
+
+- The `{..}` tells `lean` that it is an *implicit* parameter vs
+- The `(..)` we usually use for *explicit* parameters
+
+An **implicit parameter**, written `{...}` is a parameter that `lean`
+tries to _automatically infer_ at call-sites, based on the context, for example
+
+```lean
+def add (n : Nat) (m : Nat) : Nat := n + m
+#eval add 3 4  -- Must provide both arguments: 7
+```
+
+An **explicit parameter**, written `(...)` is the usual kind where _you_
+have to provide at call-sites, for example
+
+```lean
+def singleton {α : Type} (x: α) : List α := cons x nil
+#eval singleton 3
+```
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+## Induction on Lists
+
+`app` is sort of like `add` but for lists. For example, it is straightforward to prove
+"by definition" that
+
+
+```lean
+theorem app_nil_left: ∀ {α : Type} (xs: List α), app nil xs = xs := by
+  intros
+  rfl
+```
+
+However, just like `add_zero` we need to use **induction** to prove that
+
+```lean
+theorem app_nil : ∀ {α : Type} (xs: List α), app xs nil = xs := by
+  sorry
+```
+
+Because in the `cons x xs'` case, we require the fact that `app_nil` holds
+for the _smaller_ tail `xs'`, i.e that `app xs' nil = xs'`, which the `induction`
+tactic will give us as the hypothesis that we can use.
+
+## Associativity of Lists
+
+```lean
+theorem app_assoc : ∀ {α : Type} (xs ys zs: List α), app (app xs ys) zs = app xs (app ys zs) := by
+  sorry
+
+end MyList
+```
 
