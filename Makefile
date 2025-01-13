@@ -15,7 +15,6 @@ SRC_LEAN_FILES := $(wildcard $(SRC_LEAN_DIR)/*.lean)
 # Generate corresponding .md file names in dst directory
 DST_LEAN_FILES := $(patsubst $(SRC_LEAN_DIR)/%.lean,$(DST_LEAN_DIR)/%.lean,$(SRC_LEAN_FILES))
 
-
 # Default target - create all .md files
 all: $(DST_FILES)
 	@echo "Markdown generation complete"
@@ -44,5 +43,5 @@ lean_files: $(DST_LEAN_FILES)
 $(DST_LEAN_DIR):
 	mkdir -p $(DST_LEAN_DIR)
 
-$(DST_LEAN_DIR)/%.lean: $(SRC_LEAN_DIR)/%.lean | $(DST_LEAN_DIR)
+$(SRC_DIR)/%.lean: $(SRC_LEAN_DIR)/%.lean | $(DST_LEAN_DIR)
 	scripts/convert_lean.hs $< > $@
