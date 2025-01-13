@@ -4,7 +4,6 @@
 
 [Resources](#resources) - [Assignments](#assignments) - [Schedule](#schedule) - [Grading](#grading) - [Policies](#policies)
 
-
 ## Summary
 
 CSE 230 is an introduction to the Semantics of Programming Languages.
@@ -46,15 +45,14 @@ discrete mathematics, i.e. logic, sets, relations.
 
 ## Staff and Office Hours
 
-<<<<<<< HEAD
-- **Ranjit Jhala:**  Tu, Th 2-3p (3110)
-- **Nico Lehmann:**  Th 3:30pm-5:00pm (Zoom), Fr 9:30am-11am (B240A), Zoom [link in canvas](https://canvas.ucsd.edu/courses/62909)
-- **Naomi Smith:**   Tu 12pm-3pm (Zoom) 
+- **Ranjit Jhala:** Tu, Th 2-3p (3110)
+- **Nico Lehmann:** Th 3:30pm-5:00pm (Zoom), Fr 9:30am-11am (B240A), Zoom [link in canvas](https://canvas.ucsd.edu/courses/62909)
+- **Naomi Smith:** Tu 12pm-3pm (Zoom)
 - **Matt Kolosick:** Mo 10am-12pm (Zoom), Thursday 10am-11am (Zoom)
-- **Mingyao Shen:**  We 12-1p (B240A)
+- **Mingyao Shen:** We 12-1p (B240A)
 - **Kyle Thompson:** Mo 1-2p (B260A)
 
-Please check the **CANVAS calendar** before you come in case there have been any changes. 
+Please check the **CANVAS calendar** before you come in case there have been any changes.
 
 ## Resources
 
