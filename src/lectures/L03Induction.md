@@ -69,6 +69,19 @@ def app {α : Type} (xs ys: List α) : List α :=
   | [] => ys
   | x::xs' => x :: app xs' ys
 
+/-
+
+app [] [3,4,5] = [3,4,5]
+
+app (2::[]) [3,4,5] = [3,4,5]
+==>
+2 :: [3,4,5]
+==>
+[2,3,4,5]
+-/
+
+example : app [] [3,4,5] = [3,4,5] := rfl
+
 example : app [0,1,2] [3,4,5] = [0,1,2,3,4,5] := rfl
 ```
 
@@ -80,21 +93,55 @@ def rev {α : Type} (xs: List α) : List α :=
   | [] => []
   | x :: xs' => app (rev xs') [x]
 
+example : rev [] = ([] : List Int) := rfl
+example : rev [3] = [3] := rfl
+example : rev [2,3] = [3,2] := rfl
 example : rev [0,1,2,3] = [3,2,1,0] := rfl
+example : rev (rev [0,1,2,3]) = [0,1,2,3] := rfl
 ```
+
+rev [0,1,2,3]
+=>
+rev (0 :: [1,2,3])
+=>
+app (rev [1,2,3]) [0]
+=>
+app [3,2,1] [0]
+=>
+[3,2,1,0]
+
 
 Now, lets _prove_ that the above was not a fluke:
 if you reverse a list *twice* then you get back
 the original list.
 
-
 ```lean
+theorem rev_app : ∀ {α : Type} (xs ys : List α),
+  rev (app xs ys) = app (rev ys) (rev xs) := by
+    sorry
+
+/-
+rev (app xs ys) == app (rev ys) (rev xs)
+rev (app [x1,x2,x3,...xn] [y1...ym])
+== rev [x1...xn, y1...ym]
+== [ym ... y1, xn ... x1]
+== app [ym ... y1] [xn ... x1]
+== app (rev ys) (rev xs)
+
+-- |- rev (app (rev xs') [x]) = x :: xs'
+      ==>
+      app (rev [x]) (rev (rev xs'))
+-/
+
 theorem rev_rev : ∀ {α : Type} (xs: List α), rev (rev xs) = xs := by
-  intro α xs
+  intros α xs
   induction xs
-  case nil  => rfl
-  case cons x xs' ih => simp [rev, app, *]
+  . case nil =>
+    rfl
+  . case cons x xs' ih =>
+    simp [rev, rev_app, app, ih]
 ```
+
 
 Yikes. We're stuck again. What helper lemmas could we need?
 
@@ -120,17 +167,36 @@ def itadd (n m: MyNat.Nat) : MyNat.Nat :=
   | zero => m
   | succ n' => itadd n' (succ m)
 
+/-
+  itadd (s s s z) (s s s s s z)
+  =>
+  itadd (s s z) (s s s s s s z)
+  =>
+  itadd (s z) (s s s s s s s z)
+  =>
+  itadd (z) (s s s s s s s s z)
+  =>
+  (s s s s s s s s z)
+-/
+
+
 example : itadd (succ (succ zero)) (succ zero) = succ (succ (succ zero)):= by rfl
 ```
 
 Lets try to prove that `itadd` is equivalent to `add`.
 
+add n' (succ m) == succ (add n' m)
+
 ```lean
-theorem itadd_eq : ∀ (n m: MyNat.Nat), itadd n m = MyNat.add n m := by
-  intros n m
+theorem add_succ : ∀ (n m), MyNat.add n (succ m) = succ (MyNat.add n m) := by
+ sorry
+
+theorem itadd_eq : ∀ (n m), itadd n m = MyNat.add n m := by
+  intros n
   induction n
-  case zero => simp [MyNat.add, itadd]
-  case succ n' ih => simp [MyNat.add, MyNat.add_succ, itadd, ih]
+  . case zero => simp [itadd, MyNat.add]
+  . case succ n' ih =>
+    simp [MyNat.add, itadd, add_succ, ih]
 ```
 
 Ugh! Why does the proof fail???
@@ -176,12 +242,66 @@ like `∀n. P(n) /\ Q(n)` or even `∀n m, Q(n, m)` which then implies your goal
 
 ### Example: Tail-Recursive `sum`
 
+sum 3
+=>
+3 + sum 2
+=>
+3 + 2 + sum 1
+=>
+3 + 2 + 1 + sum 0
+=>
+3 + 2 + 1 + 0
+
 ```lean
 def sum (n : Nat) : Nat :=
   match n with
   | 0 => 0
   | n' + 1 => n + sum n'
+
+def loop (n res : Nat) : Nat :=
+  match n with
+  | 0      => res
+  | n' + 1 => loop n' (res + n)
+
+def sum_tr (n: Nat) := loop n 0
+
+-- loop (n' + 1) 0 == sum (n' + 1)
+-- loop a 0  == sum a
+-- loop n res  == (sum n) + res
+
+theorem loop_sum : ∀ n res, loop n res = (sum n) + res := by
+  intros n res
+  induction n generalizing res
+  . case zero =>
+    simp [loop, sum]
+  . case succ n' ih =>
+    simp_arith [loop, sum, ih]
+
+theorem sum_eq_sum_tr : ∀ n, sum_tr n = sum n := by
+  simp [sum_tr, loop_sum]
+
+
+
+
+/-
+
+fn sum(mut n: Nat) -> Nat {
+  let mut res = 0
+  while let S n' = n {
+    res = res + n;
+    n   = n';
+  }
+  res
+}
+-/
 ```
+
+
+
+
+
+
+
 
 
 **Tail-Recursively Summing**
@@ -209,12 +329,12 @@ We can write the above with **tail-recursion**
 
 
 ```lean
-def sum_tr (n acc : Nat) : Nat :=
-  match n with
-  | 0 => acc
-  | n' + 1 => sum_tr n' (n + acc)
+-- def sum_tr (n acc : Nat) : Nat :=
+--   match n with
+--   | 0 => acc
+--   | n' + 1 => sum_tr n' (n + acc)
 
-def sum' (n: Nat) := sum_tr n 0
+-- def sum' (n: Nat) := sum_tr n 0
 ```
 
 
@@ -307,11 +427,27 @@ theorem sum_list_eq_sum_list' : ∀ xs, sum_list' xs = sum_list xs := by
 
 ### Example: Tail-Recursive Reverse
 
+rev_tr [0,1,2,3]
+=>
+loop [0,1,2,3] []
+=>
+loop [1,2,3] [0]
+=>
+loop [2,3] [1, 0]
+=>
+loop [3] [2, 1, 0]
+=>
+loop [] [3, 2, 1, 0]
+=>
+[3,2,1,0]
+
+
+
 ```lean
-def rev_tr {α : Type} (xs acc: List α) : List α :=
+def rev_tr {α : Type} (xs res: List α) : List α :=
   match xs with
-  | [] => acc
-  | x ::xs' => rev_tr xs' (x :: acc)
+  | [] => res
+  | x ::xs' => rev_tr xs' (x :: res)
 
 def rev' (xs: List α) := rev_tr xs []
 
@@ -321,11 +457,22 @@ example : rev' [0,1,2,3] = [3,2,1,0] := by rfl
 Can you figure out a suitable helper lemma `rev_tr_app` that would let us complete
 the proof of `rev_eq_rev'` below?
 
+rev_tr xs [] == rev xs
+
+rev_tr xs res
+  == [xn, ...x3, x2,x1, 99]
+  == rev xs ++ res
 
 ```lean
+theorem app_nil : ∀ {α : Type} (xs: List α), app xs [] = xs := by
+  sorry
+
+theorem rev_tr_helper_theorem : ∀ {α : Type} (xs res : List α),
+  rev_tr xs res = app (rev xs) res := by sorry
+
 theorem rev_eq_rev' : ∀ {α : Type} (xs: List α), rev' xs = rev xs := by
   intros α xs
-  sorry
+  simp [rev', rev_tr_helper_theorem, app_nil]
 ```
 
 
@@ -333,15 +480,22 @@ theorem rev_eq_rev' : ∀ {α : Type} (xs: List α), rev' xs = rev xs := by
 
 **Arithmetic Expressions**
 
+    alice_plus
+    /          \
+   bob_const   bob_const
+   |            |
+   2            3
+
+
 ```lean
 inductive Aexp : Type where
-  | const : Nat -> Aexp
-  | plus  : Aexp -> Aexp -> Aexp
+  | bob_const : Nat -> Aexp
+  | alice_plus  : Aexp -> Aexp -> Aexp
   deriving Repr
 
 open Aexp
 
-def two_plus_three := plus (const 2) (const 3)
+def two_plus_three := alice_plus (bob_const 2) (bob_const 3)
 ```
 
 **Evaluating Expressions**
@@ -349,15 +503,15 @@ def two_plus_three := plus (const 2) (const 3)
 ```lean
 def eval (e: Aexp) : Nat :=
   match e with
-  | const n => n
-  | plus e1 e2 => eval e1 + eval e2
+  | bob_const n => n
+  | alice_plus e1 e2 => eval e1 + eval e2
 
 #eval eval two_plus_three
 
-def eval_acc (e: Aexp) (acc: Nat) : Nat :=
+def eval_acc (e: Aexp) (res: Nat) : Nat :=
   match e with
-  | const n => n + acc
-  | plus e1 e2 => eval_acc e2 (eval_acc e1 acc)
+  | bob_const n => n + res
+  | alice_plus e1 e2 => eval_acc e2 (eval_acc e1 res)
 
 def eval' (e: Aexp) := eval_acc e 0
 
@@ -418,5 +572,4 @@ theorem alt_len' : ∀ {α : Type} (xs ys : List α), len (alt xs ys) = len xs +
   . case case2 => simp [alt, len]
   . case case3 => simp_arith [alt, len, *]
 ```
-
 

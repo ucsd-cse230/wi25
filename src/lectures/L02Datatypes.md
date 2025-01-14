@@ -467,7 +467,10 @@ inductive List (α : Type) where
   deriving Repr
 
 open List
+
+def this_is_a_list := cons 0 (cons 1 (cons 2 nil))
 ```
+
 
 
 ## List constructors
@@ -597,5 +600,4 @@ theorem app_assoc : ∀ {α : Type} (xs ys zs: List α), app (app xs ys) zs = ap
 
 end MyList
 ```
-
 
