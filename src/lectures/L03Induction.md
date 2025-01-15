@@ -70,7 +70,6 @@ def app {α : Type} (xs ys: List α) : List α :=
   | x::xs' => x :: app xs' ys
 
 /-
-
 app [] [3,4,5] = [3,4,5]
 
 app (2::[]) [3,4,5] = [3,4,5]
@@ -81,7 +80,6 @@ app (2::[]) [3,4,5] = [3,4,5]
 -/
 
 example : app [] [3,4,5] = [3,4,5] := rfl
-
 example : app [0,1,2] [3,4,5] = [0,1,2,3,4,5] := rfl
 ```
 
@@ -89,7 +87,7 @@ example : app [0,1,2] [3,4,5] = [0,1,2,3,4,5] := rfl
 
 ```lean
 def rev {α : Type} (xs: List α) : List α :=
-  match xs with
+ match xs with
   | [] => []
   | x :: xs' => app (rev xs') [x]
 
@@ -231,6 +229,17 @@ We can do so, by using the `induction n generalizing m` which tells `lean` that
 Now, go and see what the `ih` looks like in the `case succ ...`
 
 This time we can **actually use** the `ih` and so the proof works.
+
+```lean
+theorem add_succ : ∀ (n m), MyNat.add n (succ m) = succ (MyNat.add n m) := by
+ sorry
+
+theorem itadd_eq' : ∀ (n m: MyNat.Nat), itadd n m = MyNat.add n m := by
+  intros n m
+  induction n generalizing m
+  case zero => simp [MyNat.add, itadd]
+  case succ => simp [MyNat.add, MyNat.add_succ, itadd, *]
+```
 
 
 ## Trick 3: Generalizing the Induction Hypothesis
@@ -440,8 +449,6 @@ loop [3] [2, 1, 0]
 loop [] [3, 2, 1, 0]
 =>
 [3,2,1,0]
-
-
 
 ```lean
 def rev_tr {α : Type} (xs res: List α) : List α :=
