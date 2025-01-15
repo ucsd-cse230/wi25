@@ -4,7 +4,7 @@ DST_DIR := src/lectures
 
 # Source and destination directories for lean files
 SRC_LEAN_DIR := code/Cse230wi25/full
-DST_LEAN_DIR := code/Cse230wi25
+DST_LEAN_DIR := code/Cse230wi25/cut
 
 # Get all .lean files in src directory
 SRC_FILES := $(wildcard $(SRC_DIR)/*.lean)
