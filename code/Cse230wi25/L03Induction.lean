@@ -489,39 +489,42 @@ theorem rev_eq_rev' : ∀ {α : Type} (xs: List α), rev' xs = rev xs := by
 ### Example: Tail-Recursive Evaluator
 
 **Arithmetic Expressions**
+@@@ -/
 
+inductive Aexp : Type where
+  | const : Nat -> Aexp
+  | plus  : Aexp -> Aexp -> Aexp
+  deriving Repr
+
+open Aexp
+
+def two_plus_three := plus (const 2) (const 3)
+
+
+/- @@@
+
+```
     alice_plus
     /          \
    bob_const   bob_const
    |            |
    2            3
+```
 
-@@@ -/
-
-inductive Aexp : Type where
-  | bob_const : Nat -> Aexp
-  | alice_plus  : Aexp -> Aexp -> Aexp
-  deriving Repr
-
-open Aexp
-
-def two_plus_three := alice_plus (bob_const 2) (bob_const 3)
-
-/- @@@
 **Evaluating Expressions**
 @@@-/
 
 def eval (e: Aexp) : Nat :=
   match e with
-  | bob_const n => n
-  | alice_plus e1 e2 => eval e1 + eval e2
+  | const n => n
+  | plus e1 e2 => eval e1 + eval e2
 
 #eval eval two_plus_three
 
 def eval_acc (e: Aexp) (res: Nat) : Nat :=
   match e with
-  | bob_const n => n + res
-  | alice_plus e1 e2 => eval_acc e2 (eval_acc e1 res)
+  | const n => n + res
+  | plus e1 e2 => eval_acc e2 (eval_acc e1 res)
 
 def eval' (e: Aexp) := eval_acc e 0
 

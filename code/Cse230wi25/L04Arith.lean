@@ -175,14 +175,26 @@ def asimp (a: Aexp) : Aexp :=
 
 Lets try to prove that `asimp` does not change the meaning of an expression.
 
+@@@ -/
+
+theorem aval_asimp_stuck : ∀ a s, aval a s = aval (asimp a) s := by
+  intros a s
+  induction a <;> simp [asimp, aval, *]
+  sorry
+
+/- @@@
 Oof. The "direct" proof-by-induction is stuck. Can you think of a suitable "helper lemma"?
 @@@ -/
 
 
+/- @@@
+We can use this helper to complete the proof
+@@@ -/
+
 theorem aval_asimp : ∀ a s, aval a s = aval (asimp a) s := by
-/- @@@ BEGIN:SORRY @@@ -/
   intros a s
-  induction a <;> simp [asimp, aval, *]
+/- @@@ BEGIN:SORRY @@@ -/
+  induction a <;> simp [asimp, aval, aval_plus, *]
   sorry
 
 
@@ -202,12 +214,20 @@ inductive Bexp where
 
 open Bexp
 
+/- @@@
+## Boolean Evaluator
+@@@ -/
+
 def bval (b: Bexp) (s: State) : Bool :=
   match b with
   | bbool v => v
   | bnot b' => !bval b' s
   | band b1 b2 => bval b1 s && bval b2 s
   | bless a1 a2 => aval a1 s < aval a2 s
+
+/- @@@
+## "Smart Constructors" for Boolean Constant Folding
+@@@ -/
 
 def smart_and (b1 b2: Bexp) : Bexp :=
   match b1, b2 with
@@ -235,6 +255,10 @@ def bsimp (b: Bexp) : Bexp :=
   | band b1 b2 => smart_and (bsimp b1) (bsimp b2)
   | bless a1 a2 => smart_less (asimp a1) (asimp a2)
 
+/- @@@
+## Smart Constructors are Equivalent
+@@@ -/
+
 theorem smart_not_eq : ∀ b s, bval (smart_not b) s = bval (bnot b) s := by
   intros b s
   cases b
@@ -243,11 +267,116 @@ theorem smart_not_eq : ∀ b s, bval (smart_not b) s = bval (bnot b) s := by
   . case band    => rfl
   . case bless   => rfl
 
+theorem smart_and_eq : ∀ b1 b2 s, bval (smart_and b1 b2) s = bval (band b1 b2) s := by
+  sorry
+theorem smart_less_eq : ∀ a1 a2 s, bval (smart_less a1 a2) s = bval (bless a1 a2) s := by
+  sorry
 
-theorem smart_and_eq : ∀ b1 b2 s, bval (smart_and b1 b2) s = bval (band b1 b2) s := by sorry
-theorem smart_less_eq : ∀ a1 a2 s, bval (smart_less a1 a2) s = bval (bless a1 a2) s := by sorry
+/- @@@
+## Correctness of Boolean Simplification
+
+Lets prove that `bval_bsimp b` does not
+*change the meaning* of an expression `b`.
+
+@@@ -/
+
+theorem bval_bsimp_stuck : ∀ b s, bval b s = bval (bsimp b) s := by
+  intros b s
+  sorry
+
+/- @@@
+
+## Backwards Rewriting / Simplification
+
+Boo! We cannot use `aval_asimp` directly.
+
+The `simp` uses a theorem of the form `lhs = rhs`
+to rewrite occurrences of `lhs` with `rhs`.
+In this case, however,
+
+- the theorem `aval_asimp` says `aval a s = aval (asimp a) s`
+
+- but the goal contains a term `aval (asimp a') s`
+
+- where we want to rewrite the RHS of the theorem with the LHS!
+
+You can do this either by
+
+1. making a _new_ theorem where the LHS and RHS are flipped (which is a bit silly...)
+
+2. or instead by specifying `<-` in the `simp` tactic.
+@@@ -/
 
 theorem bval_bsimp : ∀ b s, bval b s = bval (bsimp b) s := by
   intros b s
+  sorry
+
+/- @@@
+## Case Study: Compiling to a Stack Machine
+@@@ -/
+
+/- @@@
+### Stack Machine: Instructions
+@@@ -/
+
+inductive Instr where
+  | LOADI : Val -> Instr
+  | LOAD  : Vname -> Instr
+  | ADD   : Instr
+  deriving Repr
+
+open Instr
+
+/- @@@
+### Stack Machine: Interpreter
+@@@ -/
+
+abbrev Stack := List Val
+
+def exec1 (s:State) (i:Instr) (stk:Stack) : Stack :=
+  match i, stk with
+  | LOADI n, _         => (n :: stk)
+  | LOAD  x, _         => (s x :: stk)
+  | ADD    , n::m::stk => (m + n) :: stk
+  | ADD    , _         => []
+
+def exec (s:State) (is: List Instr) (stk:Stack) : Stack :=
+  match is with
+  | []     => stk
+  | i::is' => exec s is' (exec1 s i stk)
+
+/- @@@
+### Stack Machine: Compiler
+@@@ -/
+
+def comp (a: Aexp) : List Instr :=
+  match a with
+  | num n => [LOADI n]
+  | var x => [LOAD  x]
+  | add a1 a2 => comp a1 ++ comp a2 ++ [ADD]
+
+/- @@@
+### Proving Compiler Correctness
+@@@ -/
+
+theorem comp_exec_stuck : ∀ {s : State} {a : Aexp} { stk : Stack },
+  exec s (comp a) stk = aval a s :: stk := by
+  intro s a stk
+  induction a generalizing s stk
+  case num n => rfl
+  case var x => rfl
+  case add a1 a2 ih1 ih2 => simp_all [comp, aval, exec, exec1]; sorry
+
+/- @@@
+Oh no! We're stuck, what helper lemma do we need?
+@@@ -/
+
+
+theorem comp_exec : ∀ {s : State} {a : Aexp} { stk : Stack },
+  exec s (comp a) stk = aval a s :: stk := by
+  intro s a stk
+  induction a generalizing s stk
+  case num n => rfl
+  case var x => rfl
   sorry
 
