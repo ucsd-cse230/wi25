@@ -204,7 +204,7 @@ We can use this helper to complete the proof
 
 theorem aval_asimp : ∀ a s, aval a s = aval (asimp a) s := by
   intros a s
-/- @@@ BEGIN:SORRY @@@ -/
+/- @@@ START:SORRY @@@ -/
   induction a <;> simp [asimp, aval, aval_plus, *]
 /- @@@ END:SORRY @@@ -/
 
