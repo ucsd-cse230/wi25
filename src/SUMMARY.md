@@ -11,6 +11,7 @@
 - [Expressions & Types](./lectures/L01Expressions.md)
 - [Datatypes & Proofs](./lectures/L02Datatypes.md)
 - [Induction](./lectures/L03Induction.md)
+- [Stack Machines](./lectures/L04Arith.md)
 - [Evidence]()
 - [Big Step Semantics]()
 - [Small Step Semantics]()
