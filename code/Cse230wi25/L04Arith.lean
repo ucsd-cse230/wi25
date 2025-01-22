@@ -25,10 +25,18 @@ deriving Repr
 
 open Aexp
 
-def aexp_5 := num 5
-def aexp_x := var "x"
-def aexp_x_plus_y := add (var "x") (var "y")
+-- 5
+def aexp_5 := num 5       -- 5
+
+-- x
+def aexp_x := var "x"     -- x
+
+-- x + y
+def aexp_x_plus_y := add (var "x") (var "y")    -- x + y
+
+-- 2 + ( z + 3)
 def aexp_2_plus_z_plus_3 := add (num 2) (add (var "z") (num 3))
+
 
 /- @@@
 ## States
@@ -37,7 +45,15 @@ def aexp_2_plus_z_plus_3 := add (num 2) (add (var "z") (num 3))
 abbrev State := Vname -> Val
 
 -- initial state
-def st0 : State := λ _ => 0
+def st0 : State := fun _ => 0
+
+-- state that maps "x" -> 10, "y" -> 20, _ -> 10000
+def st_funny (v: Vname) : Val :=
+  match v with
+  | "x" => 10
+  | "y" => 20
+  | _   => 10000
+
 
 -- update state
 def upd (s: State) (x: Vname) (v: Val) : State :=
@@ -52,6 +68,12 @@ def aval (a: Aexp) (s: State) : Val :=
   | num n => n
   | var x => s x
   | add a1 a2 => aval a1 s + aval a2 s
+
+#eval aval aexp_x_plus_y st_funny
+
+
+
+
 
 notation:10 st " [ " x " := " v " ] " => upd st x v
 
@@ -72,6 +94,9 @@ at compile time, various operations on constants.
 For example, we may want to simplify an expression
 
 ```lean
+
+x + (3 + 1)     ==> x + 4
+
 add (var "x") (add (num 3) (num 1))
 ```
 
@@ -95,14 +120,36 @@ def asimp_const (a: Aexp) : Aexp :=
                  | num n1, num n2 => num (n1 + n2)
                  | a1', a2' => add a1' a2'
 
+#eval asimp_const (add (var "x") (add (num 10) (num 20)))
+
+#eval asimp_const (add (num 10) (add (var "x") (num 20)))
+
 /- @@@
 ## Equivalence of Constant Folding
 
 Lets prove that `asimp_const` does not **change the meaning** of the expression `a`.
 @@@ -/
 
+theorem helper_asimp_const : forall a1 a2,
+  aval (asimp_const (add a1 a2)) s = aval a1 s + aval a2 s := by
+  intros a1 a2
+  induction a1, a2 using asimp_const.induct
+  . case case1 => sorry
+  . case case2 => sorry
+  . case case3 => sorry
+  . case case4 => sorry
+
 theorem aval_asimp_const : ∀ a s, aval a s = aval (asimp_const a) s  := by
-  sorry
+  intros a s
+  induction a using asimp_const.induct
+  . case case1 =>
+    rfl
+  . case case2 =>
+    rfl
+  . case case3 a1 a2 n1 n2 ih2 ih1 ih2' ih1' =>
+    simp [aval, asimp_const, *]
+  . case case4 a1 a2 _ ih2 ih3 =>
+    simp [aval, asimp_const]
 
 /- @@@
 ## TACTIC: `simp_all` to simplify _hypotheses_
@@ -377,4 +424,3 @@ theorem comp_exec : ∀ {s : State} {a : Aexp} { stk : Stack },
   case num n => rfl
   case var x => rfl
   sorry
-

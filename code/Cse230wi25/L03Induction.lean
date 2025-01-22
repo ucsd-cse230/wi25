@@ -504,7 +504,7 @@ def two_plus_three := plus (const 2) (const 3)
 /- @@@
 
 ```
-    alice_plus
+     alice_plus
     /          \
    bob_const   bob_const
    |            |
@@ -531,6 +531,25 @@ def eval' (e: Aexp) := eval_acc e 0
 example : eval' two_plus_three = eval two_plus_three := by rfl
 
 /- @@@
+
+eval' two_plus_three
+=>
+eval' (plus (const 2) (const 3))
+=>
+eval_acc (plus (const 2) (const 3)) 0
+=>
+eval_acc (const 3) (eval_acc (const 2) 0)
+=>
+eval_acc (const 3) ( 2 + 0)
+=>
+eval_acc (const 3) 2
+=>
+3 + 2
+=>
+5
+
+
+
 ### QUIZ: Is `eval_acc` tail recursive?
 
 Lets try to prove that `eval'` and `eval` are "equivalent".
@@ -539,10 +558,16 @@ Can you figure out a suitable helper lemma that would let us complete
 the proof of `eval_eq_eval'`?
 @@@ -/
 
+theorem magic_theorem : ∀ e res, eval_acc e res = eval e + res := by
+  intros e res
+  induction e generalizing res
+  . case const n => rfl
+  . case plus e1 e2 ih1 ih2 =>
+    simp_arith [eval, eval_acc, ih1, ih2]
 
-theorem eval'_eq_eval : ∀ e, eval e = eval' e := by
-  intros
-  simp [eval', eval_acc_eq]
+theorem eval_eq_eval' : ∀ e, eval e = eval' e := by
+  intros e
+  simp [eval', magic_theorem]
 
 
 
@@ -563,16 +588,63 @@ def alt (xs ys : List α) : List α :=
   match xs, ys with
   | [], ys => ys
   | xs, [] => xs
-  | x::xs, y::ys => x :: y :: alt xs ys
+  | x::xs', y::ys' => x :: y :: alt xs' ys'
 
-#eval alt [1,2,3,4] [10,20,30]
+#eval alt [1,2,3,4] [10]
 
 /- @@@
 First, lets try a "brute force" proof.
+
+exp ::= const c | var | plus exp exp | mult exp exp
+
+(plus
+  (mult
+    (const 7)
+    (mult (var (mult var var)))))
+  (plus
+    (mult (const 2) (mult var var))
+    (const 10))
+)
+
+7x^3 + 2*x^2 + 10
+
+5x^3 + 12*x^2
+
+[7, 2, 0, 10]
+
+[5, 12, 0, 0]
+
+[12, 14, 0, 10]
+
+
 @@@ -/
 
-theorem alt_len : ∀ {α : Type} (xs ys : List α), len (alt xs ys) = len xs + len ys := by
-  sorry
+theorem alt_len_easy : ∀ {α : Type} (xs ys : List α),
+  len (alt xs ys) = len xs + len ys := by
+  intros α xs ys
+  induction xs, ys using alt.induct
+  . case case1 => simp [alt, len]
+  . case case2 => simp [alt, len]
+  . case case3 x xs' y ys' ih => simp_arith [alt, len, *]
+
+
+theorem alt_len : ∀ {α : Type} (xs ys : List α),
+  len (alt xs ys) = len xs + len ys := by
+  intros α xs ys
+  induction xs
+  . case nil =>
+    simp [alt, len]
+  . case cons x xs' ih_xs =>
+    induction ys
+    . case nil =>
+      simp [alt, len]
+    . case cons y ys' ih_ys =>
+      simp [alt, len, *]
+      sorry
+
+
+
+
 
 /- @@@
 Instead, it can be easier to do the *same* induction as mirrors the recursion in `alt`
