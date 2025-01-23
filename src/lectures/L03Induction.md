@@ -249,8 +249,10 @@ you want to prove a goal `∀n. P(n)` but in fact you need to prove something st
 like `∀n. P(n) /\ Q(n)` or even `∀n m, Q(n, m)` which then implies your goal.
 
 
+
 ### Example: Tail-Recursive `sum`
 
+```
 sum 3
 =>
 3 + sum 2
@@ -260,6 +262,8 @@ sum 3
 3 + 2 + 1 + sum 0
 =>
 3 + 2 + 1 + 0
+```
+
 
 ```lean
 def sum (n : Nat) : Nat :=
@@ -436,6 +440,7 @@ theorem sum_list_eq_sum_list' : ∀ xs, sum_list' xs = sum_list xs := by
 
 ### Example: Tail-Recursive Reverse
 
+```
 rev_tr [0,1,2,3]
 =>
 loop [0,1,2,3] []
@@ -449,6 +454,8 @@ loop [3] [2, 1, 0]
 loop [] [3, 2, 1, 0]
 =>
 [3,2,1,0]
+```
+
 
 ```lean
 def rev_tr {α : Type} (xs res: List α) : List α :=
@@ -464,11 +471,14 @@ example : rev' [0,1,2,3] = [3,2,1,0] := by rfl
 Can you figure out a suitable helper lemma `rev_tr_app` that would let us complete
 the proof of `rev_eq_rev'` below?
 
+```
 rev_tr xs [] == rev xs
 
 rev_tr xs res
   == [xn, ...x3, x2,x1, 99]
   == rev xs ++ res
+```
+
 
 ```lean
 theorem app_nil : ∀ {α : Type} (xs: List α), app xs [] = xs := by
@@ -529,6 +539,7 @@ example : eval' two_plus_three = eval two_plus_three := by rfl
 ```
 
 
+```
 eval' two_plus_three
 =>
 eval' (plus (const 2) (const 3))
@@ -544,6 +555,7 @@ eval_acc (const 3) 2
 3 + 2
 =>
 5
+```
 
 
 
@@ -592,6 +604,7 @@ def alt (xs ys : List α) : List α :=
 
 First, lets try a "brute force" proof.
 
+```
 exp ::= const c | var | plus exp exp | mult exp exp
 
 (plus
@@ -612,7 +625,7 @@ exp ::= const c | var | plus exp exp | mult exp exp
 [5, 12, 0, 0]
 
 [12, 14, 0, 10]
-
+```
 
 
 ```lean

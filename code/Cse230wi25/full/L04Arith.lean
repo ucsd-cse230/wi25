@@ -190,13 +190,43 @@ theorem aval_asimp_stuck : ∀ a s, aval a s = aval (asimp a) s := by
 
 /- @@@
 Oof. The "direct" proof-by-induction is stuck. Can you think of a suitable "helper lemma"?
+
+Yikes, we're stuck with a goal that looks like
+
+```
+⊢ aval (asimp a✝¹) s + aval (asimp a✝) s = aval (plus (asimp a✝¹) (asimp a✝)) s
+```
+
+We need a helper lemma that might tell us what `aval (plus a1 a2) s` _should_ evaluate to?
 @@@ -/
 
-/- @@@ START:CUT @@@ -/
-theorem aval_plus: ∀ a1 a2, aval (plus a1 a2) s = aval a1 s + aval a2 s := by
+
+theorem aval_aplus' : ∀ a1 a2 s,  aval (plus a1 a2) s = aval a1 s + aval a2 s := by
+  intros a1 a2 s
+  cases a1 <;> cases a2 <;> simp_arith [aval, plus] <;> sorry
+
+/- @@@
+
+## The **`split`** tactic
+
+Hmm, now we're left with a goal that looks like
+
+```
+s : State
+a✝¹ : Val
+a✝ : Vname
+⊢ aval (if a✝¹ = 0 then var a✝ else add (num a✝¹) (var a✝)) s = a✝¹ + s a✝
+```
+
+We need to "split-cases" on the `if a✝¹ = 0` branch ... convenient to do so with `split`
+(and then keep `simp`-ing!)
+@@@ -/
+
+theorem aval_plus: ∀ a1 a2 s, aval (plus a1 a2) s = aval a1 s + aval a2 s := by
   intros a1 a2
+/- @@@ START:SORRY @@@ -/
   cases a1 <;> cases a2 <;> simp_arith [plus, aval] <;> split <;> simp [aval, *]
-/- @@@ END:CUT @@@ -/
+/- @@@ END:SORRY @@@ -/
 
 /- @@@
 We can use this helper to complete the proof
@@ -204,9 +234,7 @@ We can use this helper to complete the proof
 
 theorem aval_asimp : ∀ a s, aval a s = aval (asimp a) s := by
   intros a s
-/- @@@ START:SORRY @@@ -/
   induction a <;> simp [asimp, aval, aval_plus, *]
-/- @@@ END:SORRY @@@ -/
 
 
 /- @@@
@@ -243,8 +271,8 @@ def bval (b: Bexp) (s: State) : Bool :=
 def smart_and (b1 b2: Bexp) : Bexp :=
   match b1, b2 with
   | bbool true, _  => b2
-  | _, bbool true  => b1
   | bbool false, _ => bbool false
+  | _, bbool true  => b1
   | _, bbool false => bbool false
   | _, _           => band b1 b2
 
@@ -278,10 +306,14 @@ theorem smart_not_eq : ∀ b s, bval (smart_not b) s = bval (bnot b) s := by
   . case band    => rfl
   . case bless   => rfl
 
-theorem smart_and_eq : ∀ b1 b2 s, bval (smart_and b1 b2) s = bval (band b1 b2) s := by
-  sorry
+theorem smart_and_eq : ∀ b1 b2 s,
+  bval (smart_and b1 b2) s = bval (band b1 b2) s := by
+  intros b1 b2 s
+  cases b1 <;> cases b2 <;> simp_all [smart_and, bval] <;> split <;> simp_all [bval]
+
 theorem smart_less_eq : ∀ a1 a2 s, bval (smart_less a1 a2) s = bval (bless a1 a2) s := by
-  sorry
+  intros a1 a2 s
+  cases a1 <;> cases a2 <;> simp_all [smart_less, bval, aval]
 
 /- @@@
 ## Correctness of Boolean Simplification
@@ -298,8 +330,7 @@ theorem bval_bsimp_stuck : ∀ b s, bval b s = bval (bsimp b) s := by
   . case bbool => simp [bsimp]
   . case bnot  => simp [bval, bsimp, smart_not_eq, *]
   . case band  => simp [bval, bsimp, smart_and_eq, *]
-  . case bless => simp [bval, bsimp, smart_less_eq]
-                  sorry
+  . case bless => simp [bval, bsimp, smart_less_eq ]; sorry
 /- @@@ END:SORRY @@@ -/
 
 /- @@@
@@ -337,9 +368,53 @@ theorem bval_bsimp : ∀ b s, bval b s = bval (bsimp b) s := by
 
 /- @@@
 ## Case Study: Compiling to a Stack Machine
-@@@ -/
 
-/- @@@
+In this case study, we will define a "stack machine" that operates on a stack of values.
+
+**Intuition**
+
+Given an `a : Aexp` , say
+
+```
+((x + 10) + (5 + y))
+```
+
+We will compile it into a sequence of "instructions" that operate on a stack.
+
+```
+LOAD x
+LOADI 10
+ADD
+LOADI 5
+LOAD y
+ADD
+ADD
+```
+
+Lets *execute* this sequence of instructions on a state `s` defined as `[x |-> 100, y |-> 200]` as
+
+```
+[]
+--> LOAD x
+[100]
+--> LOADI 10
+[10, 100]
+--> ADD
+[110]
+--> LOADI 5
+[5, 110]
+--> LOAD y
+[200, 5, 110]
+--> ADD
+[205, 110]
+--> ADD
+[315]
+```
+
+Note that the final result left on the stack is `315` which is exactly what `aval a s` would return.
+
+Let's define a "compiler" and "exec" function and prove that the compiler is correct!
+
 ### Stack Machine: Instructions
 @@@ -/
 
@@ -353,9 +428,16 @@ open Instr
 
 /- @@@
 ### Stack Machine: Interpreter
+
+A `Stack` is just a list of values
 @@@ -/
 
 abbrev Stack := List Val
+
+/- @@@
+Here's a function `exec1` that executes a *single* instruction
+@@@ -/
+
 
 def exec1 (s:State) (i:Instr) (stk:Stack) : Stack :=
   match i, stk with
@@ -364,13 +446,21 @@ def exec1 (s:State) (i:Instr) (stk:Stack) : Stack :=
   | ADD    , n::m::stk => (m + n) :: stk
   | ADD    , _         => []
 
+/- @@@
+Here's a function `exec` that executes a *sequence* of instructions by invoking `exec1` on each instruction.
+@@@ -/
+
 def exec (s:State) (is: List Instr) (stk:Stack) : Stack :=
   match is with
   | []     => stk
   | i::is' => exec s is' (exec1 s i stk)
 
+
 /- @@@
 ### Stack Machine: Compiler
+
+Here's a function that "compiles" an `Aexp` into a `List Instr`
+
 @@@ -/
 
 def comp (a: Aexp) : List Instr :=
