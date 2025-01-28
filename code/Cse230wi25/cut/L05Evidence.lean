@@ -306,6 +306,9 @@ def even_8 : ev 8 := by
 
 The `constructor` tactic can let you skip the name of the actual constructor,
 as long as there is a particular constructor that *matches* the current goal.
+
+(Of course, in the below you can also `repeat` the application of `constructor`).
+
 @@@ -/
 
 def even_8' : ev 8 := by
@@ -314,6 +317,18 @@ def even_8' : ev 8 := by
   constructor
   constructor
   constructor
+
+/- @@@
+### Tactic: `solve_by_elim`
+
+The `solve_by_elim` tactic is even funner: it can do a bit of "search" by recursively `apply`-ing
+the appropriate constructors (upto some fixed search depth.)
+@@@ -/
+
+def even_8'' : ev 8 := by
+  solve_by_elim
+
+
 
 /- @@@
 ## Constructing / Producing Evidence
@@ -411,7 +426,6 @@ abbrev ancestor_of := star parent_of
 
 example : ancestor_of alice alice := by
   sorry
-
 
 
 /- @@@
