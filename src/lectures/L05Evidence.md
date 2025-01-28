@@ -60,12 +60,12 @@ and use it to run the Collatz sequence starting from a given number.
 
 ```lean
 def collatz_step (n : Nat) : Nat :=
-  if even n then half n else 3 * n + 1
+  if even n then half n else (3 * n) + 1
 
-def run_collatz (steps n : Nat) : List Nat :=
-  match steps with
+def run_collatz (k n : Nat) : List Nat :=
+  match k with
   | 0 => [n]
-  | steps + 1 => n :: run_collatz steps (collatz_step n)
+  | k' + 1 => n :: run_collatz k' (collatz_step n)
 ```
 
 Lets try to `run_collatz` for a few numbers...
@@ -74,8 +74,9 @@ Lets try to `run_collatz` for a few numbers...
 #eval run_collatz 5  5
 #eval run_collatz 17 15
 #eval run_collatz 26 200
-```
 
+#eval run_collatz 30 546
+```
 
 
 ## The Termination Restriction
@@ -83,12 +84,15 @@ Lets try to `run_collatz` for a few numbers...
 Can we write a function to _count_ the number of steps needed to reach 1?
 
 
-
 ```lean
+-- def proof_that_two_eq_one (n : Nat) : 1 = 2 :=
+--   proof_that_two_eq_one n
+
+
 -- def collatz_steps (n : Nat) : Nat :=
 --   match n with
---   | 1 => 1
---   | n => collatz_steps (collatz_step n) + 1
+--   | 1 => 0
+--   | n => 1 + collatz_steps (collatz_step n)
 ```
 
 
@@ -153,12 +157,20 @@ We can encode the above rules in `lean` as an *inductive proposition*
 
 
 ```lean
+def foo (n : Nat) : Prop :=
+  n = 1
+
 inductive collatz_reaches_one : Nat -> Prop where
   | collatz_one : collatz_reaches_one 1
-  | collatz_evn : ∀ {n : Nat}, even n -> collatz_reaches_one (half n) -> collatz_reaches_one n
-  | collatz_odd : ∀ {n : Nat}, ¬ even n -> collatz_reaches_one (3*n + 1) -> collatz_reaches_one n
+  | collatz_evn : ∀ {n : Nat},
+                    even n -> collatz_reaches_one (half n) ->
+                    collatz_reaches_one n
+  | collatz_odd : ∀ {n : Nat}, ¬ even n -> collatz_reaches_one (3*n + 1) ->
+                    collatz_reaches_one n
 
 open collatz_reaches_one
+
+theorem collatz_conjecture : ∀ n, n > 0 -> collatz_reaches_one n := by sorry
 ```
 
 
@@ -184,8 +196,51 @@ As an example, we can construct evidence that `5` reaches `1` in the Collatz seq
 
 
 ```lean
+def c1 : collatz_reaches_one 1 := collatz_one
+def c2 : collatz_reaches_one 2 := collatz_evn rfl c1
+def c4 : collatz_reaches_one 4 := collatz_evn rfl c2
+def c8 : collatz_reaches_one 8 := collatz_evn rfl c4
+def c16 : collatz_reaches_one 16 :=
+  collatz_evn rfl (
+    collatz_evn rfl (
+      collatz_evn rfl (
+        collatz_evn rfl (
+          collatz_one) ) ) )
+
+
+def c16' : collatz_reaches_one 16 := by
+  apply collatz_evn
+  simp [even]
+  simp [half]
+  apply collatz_evn
+  simp [even]
+  simp [half]
+  apply collatz_evn
+  simp [even]
+  simp [half]
+  apply collatz_evn
+  simp [even]
+  simp [half]
+  apply collatz_one
+
+
+
+
+def c5 : collatz_reaches_one 5 := collatz_odd sorry c16
+
+
+
+
+
+
+
+
+
+
+
+
+
 def collatz_1 : collatz_reaches_one 1 :=
-  collatz_one
 
 def collatz_2 : collatz_reaches_one 2 :=
   let even_2 : even 2 := by simp [even]
@@ -234,6 +289,7 @@ Finally, you can **state** the Collatz conjecture as follows:
 
 ```lean
 theorem collatz_theorem : ∀ n, collatz_reaches_one n := by
+  intros n
   sorry  -- *well* out of the scope of CSE 230 ...
 ```
 
@@ -244,7 +300,8 @@ Now that we have motivated the *need* for explicit evidence, lets look at some m
 
 ## Example: Even Numbers
 
-Lets try to define the notion of a number `n` being *even* as an inductive proposition `ev n`.
+Lets try to define the notion of a number `n`
+being *even* as an inductive proposition `ev n`.
 
 What are the rules for a number `n` to be even?
 
@@ -260,7 +317,9 @@ Lets try to write these rules down in `lean`...
 ```lean
 inductive ev : Nat -> Prop where
   | evZ : ev 0
-  | evSS : ∀ {n: Nat}, ev n -> ev (n + 2)
+  | evSS : ∀ {n: Nat},
+            ev n ->
+            ev (n + 2)
 
 open ev
 ```
@@ -272,7 +331,11 @@ def even_0  : ev 0 :=                  evZ
 def even_2  : ev 2 :=             evSS evZ
 def even_4  : ev 4 :=       evSS (evSS evZ)
 def even_6  : ev 6 := evSS (evSS (evSS evZ))
+
+def even_10 : ev 10 := by
+  repeat constructor
 ```
+
 
 Note that evidence is literally just a value so we can use `even_4` to get a proof of `even_6`
 
@@ -334,9 +397,24 @@ then we can construct evidence that `ev n`.
 
 ```lean
 theorem even_ev : ∀ {n : Nat}, even n = true -> ev n := by
-  intros n h
-  sorry
+  intros n even_n
+  induction n using even.induct
+  . case case1 => constructor
+  . case case2 => simp_all [even]
+  . case case3 n' ih' => simp_all [even]
+                         solve_by_elim
+
+
+theorem ev_even' : ∀ {n : Nat}, ev n -> even n = true := by
+  intros n ev_n
+  induction ev_n
+  . case evZ => rfl
+  . case evSS => simp_all [even]
 ```
+
+
+
+
 
 ## Destructing / Using Evidence
 
@@ -408,8 +486,11 @@ Lets define this as an inductive proposition
 
 ```lean
 inductive star {α : Type} (r: α -> α -> Prop) : α -> α -> Prop where
-  | refl : ∀ {a : α}, star r a a
-  | step : ∀ {x y z : α}, r x y -> star r y z -> star r x z
+  | refl : ∀ {x : α},
+            star r x x
+  | step : ∀ {x y z : α},
+            r x y -> star r y z ->
+            star r x z
 
 open star
 ```
@@ -420,8 +501,20 @@ We can now define `ancestor_of` using `star`, and then test it out on a few exam
 abbrev ancestor_of := star parent_of
 
 example : ancestor_of alice alice := by
-  sorry
+  constructor
+
+example : ancestor_of alice charlie := by
+  repeat constructor
+
+theorem star_transitive :
+    ∀ {α : Type} {r : α -> α -> Prop} {x y z : α},
+    star r x y -> star r y z -> star r x z := by
+    intros α r x y z xy yz
+    cases xy
+    . case refl => assumption
+    . case step => sorry
 ```
+
 
 
 
@@ -487,5 +580,4 @@ theorem S_equiv_T : ∀ {w : List Alphabet}, gS w ↔ gT w := by
   apply S_imp_T
   apply T_imp_S
 ```
-
 
