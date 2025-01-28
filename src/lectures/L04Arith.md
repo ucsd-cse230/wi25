@@ -1,6 +1,7 @@
+```lean
 set_option pp.fieldNotation false
+```
 
-/- @@@
 
 # Expressions
 
@@ -8,12 +9,10 @@ This material is based on
 
 - Chapter 3 of [Concrete Semantics](http://www.concrete-semantics.org/)
 
-@@@-/
 
-/- @@@
 ## Arithmetic Expressions
-@@@ -/
 
+```lean
 abbrev Val := Nat
 abbrev Vname := String
 
@@ -36,12 +35,12 @@ def aexp_x_plus_y := add (var "x") (var "y")    -- x + y
 
 -- 2 + ( z + 3)
 def aexp_2_plus_z_plus_3 := add (num 2) (add (var "z") (num 3))
+```
 
 
-/- @@@
 ## States
-@@@ -/
 
+```lean
 abbrev State := Vname -> Val
 
 -- initial state
@@ -58,11 +57,11 @@ def st_funny (v: Vname) : Val :=
 -- update state
 def upd (s: State) (x: Vname) (v: Val) : State :=
   λ y => if y = x then v else s y
+```
 
-/- @@@
 ## Evaluation
-@@@ -/
 
+```lean
 def aval (a: Aexp) (s: State) : Val :=
   match a with
   | num n => n
@@ -84,8 +83,8 @@ example : aval aexp_x st0 = 0 := rfl
 
 example : aval aexp_x_plus_y st1 = 12 := rfl
 example : aval aexp_2_plus_z_plus_3 st1 = 105 := rfl
+```
 
-/- @@@
 ## Constant Folding
 
 Compilers often want to "simplify" expressions by performing,
@@ -109,9 +108,9 @@ add (var "x") (num 4)
 We can implement this idea in a little recursive funciton `asimp_const`
 that does this form of **constant folding** in a bottom-up manner
 
-@@@ -/
 
 
+```lean
 def asimp_const (a: Aexp) : Aexp :=
   match a with
   | num n => num n
@@ -123,9 +122,9 @@ def asimp_const (a: Aexp) : Aexp :=
 #eval asimp_const (add (var "x") (add (num 10) (num 20)))
 
 #eval asimp_const (add (num 10) (add (var "x") (num 20)))
+```
 
 
-/- @@@
        add
       /   \
       x    add
@@ -143,8 +142,8 @@ def asimp_const (a: Aexp) : Aexp :=
 ## Equivalence of Constant Folding
 
 Lets prove that `asimp_const` does not **change the meaning** of the expression `a`.
-@@@ -/
 
+```lean
 theorem helper_asimp_const : forall a1 a2,
   aval (asimp_const (add a1 a2)) s = aval a1 s + aval a2 s := by
   intros a1 a2
@@ -165,14 +164,14 @@ theorem aval_asimp_const : ∀ a s, aval a s = aval (asimp_const a) s  := by
     simp [aval, asimp_const, *]
   . case case4 a1 a2 _ ih2 ih3 =>
     simp [aval, asimp_const, *]
+```
 
-/- @@@
 ## TACTIC: `simp_all` to simplify _hypotheses_
 
 Lets flip the order of the equality.
-@@@ -/
 
 
+```lean
 -- REWRITING hypotheses: simp_all
 theorem aval_asimp_const' : ∀ a s,
   aval (asimp_const a) s = aval a s := by
@@ -184,8 +183,8 @@ theorem aval_asimp_const' : ∀ a s,
     simp_all [aval, asimp_const]
   . case case4 a1 a2 _ ih2 ih3 =>
     simp_all [aval, asimp_const]
+```
 
-/- @@@
 Oh no! The exact same proof does not work! `lean` is stuck at the goal
 
 ```lean
@@ -221,35 +220,35 @@ i.e. `add (num 0) a` or `add a (num 0)` just become `a`.
 
 A clean way to do so is by writing a **smart constructor** `plus` which handles
 both the num-num-addition and the zero-addition cases as
-@@@ -/
 
+```lean
 def smart_add (a1 a2: Aexp) : Aexp :=
   match a1, a2 with
   | num n1, num n2 => num (n1 + n2)
   | num n , a      => if n = 0 then a else add (num n) a
   | a, num n       => if n = 0 then a else add a (num n)
   | _, _           => add a1 a2
+```
 
-/- @@@
 We can now write a general simplifier `asimp` that recursively
 traverses the `Aexp` and invokes `plus` at each `add`
-@@@ -/
 
+```lean
 def asimp (a: Aexp) : Aexp :=
   match a with
   | num n => num n
   | var x => var x
   | add a1 a2 => smart_add (asimp a1) (asimp a2)
+```
 
-/- @@@
 
 Lets try to prove that `asimp` does not change the meaning of an expression.
 
 
 
 
-@@@ -/
 
+```lean
 theorem asimp_helper : ∀ a1 a2 s,
   aval (smart_add a1 a2) s = aval a1 s + aval a2 s := by
   intros a1 a2 s
@@ -259,8 +258,8 @@ theorem aval_asimp_stuck : ∀ a s,
   aval a s = aval (asimp a) s := by
   intros a s
   induction a <;> simp [asimp, aval, asimp_helper, *]
+```
 
-/- @@@
 Oof. The "direct" proof-by-induction is stuck. Can you think of a suitable "helper lemma"?
 
 Yikes, we're stuck with a goal that looks like
@@ -270,23 +269,23 @@ Yikes, we're stuck with a goal that looks like
 ```
 
 We need a helper lemma that might tell us what `aval (plus a1 a2) s` _should_ evaluate to?
-@@@ -/
 
+```lean
 theorem aval_aplus : ∀ a1 a2 s,  aval (smart_add a1 a2) s = aval a1 s + aval a2 s := by
   intros a1 a2 s
   cases a1 <;> cases a2 <;> simp_arith [aval, smart_add] <;> split <;> simp_all!
+```
 
-/- @@@
 We can use this helper to complete the proof
-@@@ -/
 
+```lean
 theorem aval_asimp : ∀ a s,
   aval a s = aval (asimp a) s := by
   intros a s
   induction a <;> simp [asimp, aval, aval_aplus, *]
+```
 
 
-/- @@@
 
 ## The **`split`** tactic
 
@@ -301,20 +300,20 @@ a✝ : Vname
 
 We need to "split-cases" on the `if a✝¹ = 0` branch ... convenient to do so with `split`
 (and then keep `simp`-ing!)
-@@@ -/
 
+```lean
 theorem aval_aplus'' : ∀ a1 a2 s,  aval (smart_add a1 a2) s = aval a1 s + aval a2 s := by
   intros a1 a2 s
   cases a1 <;> cases a2 <;> simp_arith [aval, smart_add] <;> split <;> simp_all [aval]
+```
 
 
-/- @@@
 ## Boolean Expressions
 
 Lets define a datatype for boolean expressions
-@@@ -/
 
 
+```lean
 inductive Bexp where
   | bbool : Bool -> Bexp
   | bnot  : Bexp  -> Bexp
@@ -323,23 +322,23 @@ inductive Bexp where
   deriving Repr
 
 open Bexp
+```
 
-/- @@@
 ## Boolean Evaluator
-@@@ -/
 
+```lean
 def bval (b: Bexp) (s: State) : Bool :=
   match b with
   | bbool v => v
   | bnot b' => !bval b' s
   | band b1 b2 => bval b1 s && bval b2 s
   | bless a1 a2 => aval a1 s < aval a2 s
+```
 
 
-/- @@@
 ## "Smart Constructors" for Boolean Constant Folding
-@@@ -/
 
+```lean
 def smart_and (b1 b2: Bexp) : Bexp :=
   match b1, b2 with
   | bbool true, _  => b2
@@ -365,11 +364,11 @@ def bsimp (b: Bexp) : Bexp :=
   | bnot b     => smart_not (bsimp b)
   | band b1 b2 => smart_and (bsimp b1) (bsimp b2)
   | bless a1 a2 => smart_less (asimp a1) (asimp a2)
+```
 
-/- @@@
 ## Smart Constructors are Equivalent
-@@@ -/
 
+```lean
 theorem smart_not_eq : ∀ b s, bval (smart_not b) s = bval (bnot b) s := by
   intros b s
   cases b
@@ -386,15 +385,15 @@ theorem smart_and_eq : ∀ b1 b2 s,
 theorem smart_less_eq : ∀ a1 a2 s, bval (smart_less a1 a2) s = bval (bless a1 a2) s := by
   intros a1 a2 s
   cases a1 <;> cases a2 <;> simp [bval, smart_less, aval]
+```
 
-/- @@@
 ## Correctness of Boolean Simplification
 
 Lets prove that `bval_bsimp b` does not
 *change the meaning* of an expression `b`.
 
-@@@ -/
 
+```lean
 theorem bval_bsimp_stuck : ∀ b s,
   bval b s = bval (bsimp b) s := by
   intros b s
@@ -403,8 +402,8 @@ theorem bval_bsimp_stuck : ∀ b s,
   . case bnot  => simp [bval, bsimp, smart_not_eq, *]
   . case band  => simp [bval, bsimp, smart_and_eq, *]
   . case bless => simp [bval, bsimp, smart_less_eq, <-aval_asimp]
+```
 
-/- @@@
 
 ## Backwards Rewriting / Simplification
 
@@ -425,8 +424,8 @@ You can do this either by
 1. making a _new_ theorem where the LHS and RHS are flipped (which is a bit silly...)
 
 2. or instead by specifying `<-` in the `simp` tactic.
-@@@ -/
 
+```lean
 theorem bval_bsimp : ∀ b s, bval b s = bval (bsimp b) s := by
   intros b s
   induction b
@@ -434,8 +433,8 @@ theorem bval_bsimp : ∀ b s, bval b s = bval (bsimp b) s := by
   . case bnot  => simp [bval, bsimp, smart_not_eq, *]
   . case band  => simp [bval, bsimp, smart_and_eq, *]
   . case bless => simp [bval, bsimp, smart_less_eq, <-aval_asimp]
+```
 
-/- @@@
 ## Case Study: Compiling to a Stack Machine
 
 In this case study, we will define a "stack machine" that operates on a stack of values.
@@ -561,8 +560,8 @@ Note that the final result left on the stack is `315` which is exactly what `ava
 Let's define a "compiler" and "exec" function and prove that the compiler is correct!
 
 ### Stack Machine: Instructions
-@@@ -/
 
+```lean
 inductive Instr where
   | PUSH    : Val -> Instr
   | PUSHVAR : Vname -> Instr
@@ -570,16 +569,16 @@ inductive Instr where
   deriving Repr
 
 open Instr
+```
 
 
 
 
-/- @@@
 ### Stack Machine: Interpreter
 
 A `Stack` is just a list of values
-@@@ -/
 
+```lean
 abbrev Stack := List Val
 
 def exec1' (instr: Instr) (s: State) (stk: Stack) : Stack :=
@@ -640,49 +639,49 @@ theorem compiler_correct : ∀ a s stk,
     simp [comp', exec', exec1', aval]
   . case add a1 a2 ih1 ih2 =>
      simp [comp', exec', exec1', aval, exec_append', *]
+```
 
-/- @@@
 
 Aexp -> List Instr
 
 Here's a function `exec1` that executes a *single* instruction
-@@@ -/
 
 
+```lean
 def exec1 (s:State) (i:Instr) (stk:Stack) : Stack :=
   match i, stk with
   | PUSH n, _         => (n :: stk)
   | PUSHVAR  x, _         => (s x :: stk)
   | ADD    , n::m::stk => (m + n) :: stk
   | ADD    , _         => []
+```
 
-/- @@@
 Here's a function `exec` that executes a *sequence* of instructions by invoking `exec1` on each instruction.
-@@@ -/
 
+```lean
 def exec (s:State) (is: List Instr) (stk:Stack) : Stack :=
   match is with
   | []     => stk
   | i::is' => exec s is' (exec1 s i stk)
+```
 
 
-/- @@@
 ### Stack Machine: Compiler
 
 Here's a function that "compiles" an `Aexp` into a `List Instr`
 
-@@@ -/
 
+```lean
 def comp (a: Aexp) : List Instr :=
   match a with
   | num n => [PUSH n]
   | var x => [PUSHVAR  x]
   | add a1 a2 => comp a1 ++ comp a2 ++ [ADD]
+```
 
-/- @@@
 ### Proving Compiler Correctness
-@@@ -/
 
+```lean
 theorem comp_exec_stuck : ∀ {s : State} {a : Aexp} { stk : Stack },
   exec s (comp a) stk = aval a s :: stk := by
   intro s a stk
@@ -690,11 +689,11 @@ theorem comp_exec_stuck : ∀ {s : State} {a : Aexp} { stk : Stack },
   case num n => rfl
   case var x => rfl
   case add a1 a2 ih1 ih2 => simp_all [comp, aval, exec, exec1]; sorry
+```
 
-/- @@@
 Oh no! We're stuck, what helper lemma do we need?
-@@@ -/
 
+```lean
 theorem comp_exec : ∀ {s : State} {a : Aexp} { stk : Stack },
   exec s (comp a) stk = aval a s :: stk := by
   intro s a stk
@@ -702,3 +701,5 @@ theorem comp_exec : ∀ {s : State} {a : Aexp} { stk : Stack },
   case num n => rfl
   case var x => rfl
   case add a1 a2 ih1 ih2 => simp_all [comp, aval, exec, exec1]; sorry
+```
+

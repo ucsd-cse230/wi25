@@ -12,7 +12,7 @@
 - [Datatypes & Proofs](./lectures/L02Datatypes.md)
 - [Induction](./lectures/L03Induction.md)
 - [Stack Machines](./lectures/L04Arith.md)
-- [Evidence]()
+- [Evidence](./lectures/L05Evidence.md)
 - [Big Step Semantics]()
 - [Small Step Semantics]()
 - [Axiomatic Semantics]()
