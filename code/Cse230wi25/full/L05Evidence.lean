@@ -306,6 +306,9 @@ def even_8 : ev 8 := by
 
 The `constructor` tactic can let you skip the name of the actual constructor,
 as long as there is a particular constructor that *matches* the current goal.
+
+(Of course, in the below you can also `repeat` the application of `constructor`).
+
 @@@ -/
 
 def even_8' : ev 8 := by
@@ -314,6 +317,18 @@ def even_8' : ev 8 := by
   constructor
   constructor
   constructor
+
+/- @@@
+### Tactic: `solve_by_elim`
+
+The `solve_by_elim` tactic is even funner: it can do a bit of "search" by recursively `apply`-ing
+the appropriate constructors (upto some fixed search depth.)
+@@@ -/
+
+def even_8'' : ev 8 := by
+  solve_by_elim
+
+
 
 /- @@@
 ## Constructing / Producing Evidence
@@ -447,6 +462,9 @@ then
 - `a` should _also_ be an `ancestor_of `c` ?
 
 In fact, this **transitivity** fact should hold for *any* `star r`. Lets try to prove it!
+
+**HINT:** The `solve_by_elim` tactic is quite handy.
+
 @@@ -/
 
 theorem star_trans : ∀ {α : Type} {r : α -> α -> Prop} {a b c : α},
@@ -458,7 +476,6 @@ theorem star_trans : ∀ {α : Type} {r : α -> α -> Prop} {a b c : α},
   case _ => apply star_bc
   case step a x b r_ax _ ih => simp_all [step r_ax]
 /- @@@ END:SORRY @@@ -/
-
 
 
 /- @@@
