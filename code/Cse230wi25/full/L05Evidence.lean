@@ -28,7 +28,7 @@ Per Wikipedia, the [Collatz Conjecture](https://en.wikipedia.org/wiki/Collatz_co
 >
 > The conjecture is that these sequences always reach 1, **no matter which positive integer is chosen to start the sequence.**
 >
-> The conjecture has been shown to hold for all positive integers up to $2.95 \times 10^{20}$, but no general proof has been found.
+> The conjecture has been shown to hold for all positive integers up to $$2.95 \times 10^{20}$$, but no general proof has been found.
 
 Lets try to model the Collatz Conjecture in Lean.
 
