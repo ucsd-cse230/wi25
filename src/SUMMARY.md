@@ -13,9 +13,10 @@
 - [Induction](./lectures/L03Induction.md)
 - [Stack Machines](./lectures/L04Arith.md)
 - [Evidence](./lectures/L05Evidence.md)
-- [Big Step Semantics]()
+- [Big Step Semantics](./lectures/L06BigStep.md)
 - [Small Step Semantics]()
-- [Axiomatic Semantics]()
+- [Floyd-Hoare Logic]()
+- [Verification Conditions]()
 - [Simply Typed Lambda Calculus]()
 - [Automated Verification]()
 
