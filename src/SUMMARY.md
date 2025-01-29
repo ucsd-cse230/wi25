@@ -18,6 +18,7 @@
 - [Floyd-Hoare Logic]()
 - [Verification Conditions]()
 - [Simply Typed Lambda Calculus]()
+- [Type Soundness]()
 - [Automated Verification]()
 
 
