@@ -1,53 +1,14 @@
+import Cse230wi25.L04Arith
+
 set_option pp.fieldNotation false
 set_option pp.proofs true
 
-/- @@@
-## Recap: States
-@@@ -/
-
-abbrev Val := Nat
-abbrev Vname := String
-abbrev State := Vname -> Val
-
--- initial state
-def st0 : State := λ _ => 0
-
--- update state
-def upd (s: State) (x: Vname) (v: Val) : State :=
-  λ y => if y = x then v else s y
-
--- some notation for writing updated state
-notation:10 st " [ " x " := " v " ] " => upd st x v
-
--- example: a state where `x := 2, y := 10, z := 100` and all other vars are `0`
-def st1 := st0 ["x" := 2] [ "y" := 10 ] [ "z" := 100 ]
-
-
-
-/- @@@
-## Recap: Arithmetic Expressions and Evaluation
-@@@ -/
-
-def st100 : State := λ _ => 100
-
-inductive Aexp where
-| num : Val -> Aexp
-| var : Vname -> Aexp
-| add : Aexp -> Aexp -> Aexp
-deriving Repr
-
 open Aexp
-
-def aval (a: Aexp) (s: State) : Val :=
-  match a with
-  | num n => n
-  | var x => s x
-  | add a1 a2 => aval a1 s + aval a2 s
-
+open Bexp
 
 /- @@@
 
-## Overloading Operators
+## Lean Tip: Overloading Operators
 
 Some convenient ways to "write" `Aexp` in lean by overloading the `+` operator.
 
@@ -85,27 +46,6 @@ def z := "z"
 def aexp0 : Aexp := x#1 + y#1 + z#1 + 5
 
 #eval aexp0
-
-/- @@@
-## Recap: Boolean Expressions and Evaluation
-@@@ -/
-
-
-inductive Bexp where
-  | bbool : Bool -> Bexp
-  | bnot  : Bexp -> Bexp
-  | band  : Bexp -> Bexp -> Bexp
-  | bless : Aexp -> Aexp -> Bexp
-  deriving Repr
-
-open Bexp
-
-def bval (b: Bexp) (st: State) : Bool :=
-  match b with
-  | bbool v        => v
-  | bnot b1     => ! bval b1 st
-  | band b1 b2  => bval b1 st && bval b2 st
-  | bless a1 a2 => aval a1 st < aval a2 st
 
 /- @@@
 ## An Imperative Language: `Com`
@@ -203,7 +143,7 @@ notation:12 "⟨" c "," s "⟩ ==> " t  => BigStep c s t
 
 /- @@@
 
-## Examples: Big Step Semantics for `Com`
+### Big Step Evaluation: Examples
 
 We say that `c : Com` started in `s: State` big-steps to `t : State`
 whenever we have the proposition `⟨ c, s ⟩ ==> t`. This proposition
@@ -224,6 +164,40 @@ example : ⟨ (x <~ 5 ;; y <~ var x) , st0 ⟩ ==> st0 [x := 5] [y := 5] := by
 
 example : ⟨ (x <~ 5 ;; y <~ x + 1) , st0 ⟩ ==> st0 [x := 5] [y := 6] := by
   repeat constructor
+
+/- @@@
+
+### EXERCISE: Using Big Step Evaluation
+
+Lets see how we can use big-step semantics to precisely state and verify some
+intuitive facts about programs.
+
+Suppose we have a command `c` that *does not assign to* a variable `x`.
+Now, suppose that when we run `c` from a state `s` we finish at state `t`.
+
+What do you think is the relationship between the value of `x` at `s` and `t`?
+
+Can you try to formalize the above "english" as a precise theorem? (Ex 7.1 from NK)
+
+@@@ -/
+
+/- @@@ START: CUT @@@ -/
+def assigned(c: Com) : Vname -> Bool :=
+  match c with
+  | Com.Assign x _ => fun y => x == y
+  | Com.Seq c1 c2  => fun y => assigned c1 y || assigned c2 y
+  | Com.If _ c1 c2 => fun y => assigned c1 y || assigned c2 y
+  | Com.While _ c  => fun y => assigned c y
+  | Com.Skip       => fun _ => false
+
+theorem ex_unchanged : (⟨ c, s ⟩ ==> t) -> (assigned c x == false) -> s x = t x := by
+  intros cst asg
+  induction cst <;> simp_all [assigned]
+  . case Assign st a n =>
+    simp_all [upd]
+    split <;> simp_all []
+/- @@@ END: CUT @@@ -/
+
 
 /- @@@
 
@@ -311,7 +285,7 @@ theorem skip_skip : ∀ {c: Com}, (Skip ;; c) ≃ c := by
 
 /- @@@
 
-## Case Splitting on Assumptions
+### Lean Tip: Case Splitting on Assumptions
 
 Lets try to prove that `IF b then c else c` is equivalent to `c`.
 
@@ -384,7 +358,7 @@ theorem unfold_while : ∀ {b c},
 
 /- @@@
 
-## `equiv_com` is an equivalence relation
+### `equiv_com` is an equivalence relation
 
 It is easy to prove that `≃` is an **equivalence relation**, that is,
 it is **reflexive**, **symmetric** and **transitive**.
@@ -442,7 +416,7 @@ theorem while_cong : ∀ {b c c'},
 
 /- @@@
 
-## BigStep Semantics are Deterministic
+### BigStep Semantics are Deterministic
 
 Typically, we want to design languages that are **deterministic** which means,
 that if you *start* running a command `c` from some state `s` then there is *at most*

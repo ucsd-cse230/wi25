@@ -15,10 +15,11 @@
 - [Evidence](./lectures/L05Evidence.md)
 - [Big Step Semantics](./lectures/L06BigStep.md)
 - [Small Step Semantics]()
+- [Type Checking IMP]()
 - [Floyd-Hoare Logic]()
 - [Verification Conditions]()
 - [Simply Typed Lambda Calculus]()
-- [Type Soundness]()
+- [Type Checking STLC]()
 - [Automated Verification]()
 
 
