@@ -368,7 +368,6 @@ it is **reflexive**, **symmetric** and **transitive**.
 theorem equiv_refl : ∀ {c}, c ≃ c := by
   simp_all [equiv_com]
 
-
 theorem equiv_symm : ∀ {c c'}, c ≃ c' -> c' ≃ c := by
   simp_all [equiv_com]
 
@@ -414,11 +413,81 @@ theorem while_cong : ∀ {b c c'},
       apply equiv_symm
       assumption
 
+
+
+/- @@@
+
+## Verifying an Optimization
+
+Consider the following code
+
+```
+x <~ a ;; y <~ a
+```
+
+It seems a bit *redundant* to compute the `a` again, when we have just assigned it to `x`, right?
+
+Instead, we should be able to just replace the above with
+
+```
+x <~ a ;; y <~ x
+```
+
+That is, just "copy" the value we computed and saved in `x`.
+
+Right?
+
+Lets see if we can formalize this as an *equivalence* ...
+
+@@@ -/
+
+def reads (a: Aexp) (x: Vname) : Bool :=
+  match a with
+  | var y     => x = y
+  | num _     => false
+  | add a1 a2 => reads a1 x || reads a2 x
+
+theorem unmodified_assign: ∀ {x a n s}, reads a x = false -> (aval a (s [x := n]) = aval a s) := by
+  intros x a n s not_reads_x
+  induction a <;> simp_all [aval, reads]
+  . case var => simp_all [upd]; intros; simp_all []
+
+@[simp]
+theorem assign_step : ∀ {x a s t}, (⟨ x <~ a, s ⟩ ==> t) <-> (t = (s [x := (aval a s)])) := by
+  intros x a s t
+  apply Iff.intro
+  .case mp => intros xs; cases xs ; trivial
+  .case mpr => intros; simp_all [] ; apply BigStep.Assign
+
+theorem redundant_assign : ∀ {x y a}, reads a x = false -> (x <~ a ;; y <~ a) ≃ (x <~ a ;; y <~ var x) := by
+  simp_all [equiv_com]
+  intros x y a not_reads s t
+  generalize ff : aval a s = n
+  have aa : aval a (s [x := n ]) = aval a s  := by
+    apply unmodified_assign; assumption
+  constructor
+  . case mp =>
+    intros xaya; cases xaya; rename_i s' xa ya
+    cases xa; cases ya
+    constructor
+    constructor
+    simp [aval]
+    simp_all [upd]
+  . case mpr =>
+    intros xayx; cases xayx; rename_i s' xa yx
+    cases xa; cases yx
+    constructor
+    constructor
+    simp [aval]
+    simp_all [upd]
+
+
+
 /- @@@
 
 ### BigStep Semantics are Deterministic
 
-Typically, we want to design languages that are **deterministic** which means,
+Finally, we want to design languages that are **deterministic** which means,
 that if you *start* running a command `c` from some state `s` then there is *at most*
 one state `t` that it can *finish* in. (It would be rather strange if we started in the
 same state and *sometimes* the program finished with `x = 10` and at other times `x = 20`).

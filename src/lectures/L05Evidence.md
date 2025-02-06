@@ -391,13 +391,51 @@ inductive parent_of : person -> person -> Prop where
   | parent_gh : parent_of gerald  fred
 
 open parent_of
+
+inductive anc_of : person -> person -> Prop where
+  | anc_self : ∀ {x}, anc_of x x
+  | anc_step : ∀ {x y z}, parent_of x y -> anc_of y z -> anc_of x z
+
+open anc_of
+
+example : anc_of alice diane := by
+  repeat constructor
+
+theorem anc_of_transitive : ∀ {a b c},
+  anc_of a b -> anc_of b c -> anc_of a c
+  := by
+  intros a b c anc_ab anc_bc
+  induction anc_ab
+  . case anc_self =>
+    assumption
+  . case anc_step =>
+    rename_i a x b _ _ ih
+    simp_all []
+    constructor
+    assumption
+    assumption
 ```
+
+
+
+
+
+
 
 
 Now suppose we want to define an `ancestor_of` relationship, as
 
+---------------- [anc-self]
+  anc_of x x
+
+parent_of x y     anc_of y z
+----------------------------- [anc-step]
+  anc_of x z
+
+
+
 - **(reflexive)** `x` is an `ancestor_of `x` or
-- **(transitive)** if `parent_of x z` and `ancestor_of x z` then `ancestor_of x z`
+- **(transitive)** if `parent_of x y` and `ancestor_of y z` then `ancestor_of x z`
 
 That is, the `ancestor_of` relation is the **reflexive** and **transitive**
 closure of a relation `parent_of`.
@@ -455,8 +493,17 @@ In fact, this **transitivity** fact should hold for *any* `star r`. Lets try to 
 theorem star_trans : ∀ {α : Type} {r : α -> α -> Prop} {a b c : α},
   star r a b -> star r b c -> star r a c :=
   by
-  sorry
+  intros α r a b c r_ab r_bc
+  induction r_ab
+  . case refl =>
+    assumption
+  . case step =>
+    simp_all []
+    constructor
+    assumption
+    assumption
 ```
+
 
 
 
@@ -466,6 +513,8 @@ Lets look at one last example of doing induction on evidence. Consider two gramm
 for parsing strings over the characters `a` and `b`
 
 The first grammar is defined by the non-terminal `S`
+
+(((((((((((((())))))))))))))(((((())))))
 
 ```
   S ::= ε | a S b | S S

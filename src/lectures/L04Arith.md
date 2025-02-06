@@ -38,10 +38,26 @@ abbrev State := Vname -> Val
 -- initial state
 def st0 : State := λ _ => 0
 
+
 -- update state
 def upd (s: State) (x: Vname) (v: Val) : State :=
   λ y => if y = x then v else s y
+
+def st0' := upd st0 "x" 100
+
+notation:10 st " [ " x " := " v " ] " => upd st x v
+
+def st0'' := st0 [ "x" := 100 ] [ "y" := 99 ] [ "z" := 666 ]
+
+
+#eval st0'' "z"
 ```
+
+
+
+
+
+
 
 ## Evaluation
 
@@ -52,7 +68,6 @@ def aval (a: Aexp) (s: State) : Val :=
   | var x => s x
   | add a1 a2 => aval a1 s + aval a2 s
 
-notation:10 st " [ " x " := " v " ] " => upd st x v
 
 def st1 := st0 ["x" := 2] [ "y" := 10 ] [ "z" := 100 ]
 
@@ -473,5 +488,4 @@ theorem comp_exec : ∀ {s : State} {a : Aexp} { stk : Stack },
   case var x => rfl
   sorry
 ```
-
 
