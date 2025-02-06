@@ -121,8 +121,8 @@ def st_x_10_y_20 := st0 [x := 10 ] [ y := 20]
 inductive BigStep : Com -> State -> State -> Prop where
   | Skip   : ∀ {st},
                 BigStep Skip st st
-  | Assign : ∀ {st a n},
-                BigStep (Assign a n) st (st [a := aval n st])
+  | Assign : ∀ {st x a},
+                BigStep (Assign x a) st (st [x := aval a st])
   | Seq    : ∀ {c1 c2 st1 st2 st3},
                 BigStep c1 st1 st2 -> BigStep c2 st2 st3 ->
                 BigStep (Seq c1 c2) st1 st3
@@ -440,6 +440,59 @@ Right?
 Lets see if we can formalize this as an *equivalence* ...
 
 @@@ -/
+
+theorem assign_steps : ∀ {x a s},
+  ( ⟨ x <~ a, s ⟩ ==> t ) <-> t = (s [ x := aval a s])
+  := by sorry
+
+-- how to say 'does not contain x'?
+
+
+def does_not_contain (a : Aexp) (x :Vname) :=
+  match a with
+  | num _ => true
+  | var y => not (x = y)
+  | add a1 a2 => does_not_contain a1 x && does_not_contain a2 x
+
+theorem dnc_upd : ∀ {x a s n},
+  does_not_contain a x -> aval a (s [ x := n ]) = aval a s := by
+  sorry
+
+theorem double_assign :
+  does_not_contain a x -> (( x <~ a ;; y <~ a) ≃ (x <~ a ;; y <~ var x)) :=
+  by
+  simp [equiv_com]; intros dnc_a_x s t; constructor
+  . case mp =>
+    intros xaya; cases xaya; rename_i s' xa ya
+    constructor
+    assumption
+    simp [assign_steps]
+    cases ya
+    have bb : aval a s' = aval (var x) s' := by
+      cases xa
+      simp [aval, upd]
+      apply dnc_upd
+      assumption
+    simp_all []
+  . case mpr =>
+    sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def reads (a: Aexp) (x: Vname) : Bool :=
   match a with
