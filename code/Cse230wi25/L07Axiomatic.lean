@@ -91,14 +91,7 @@ How can we *prove* that theorem?
 
 theorem swap_swaps : ∀ {s t : State} {n m : Val},
   s x = n -> s y = m -> (⟨ swap, s ⟩ ==> t) -> (t x = m) /\ (t y = n) := by
-/- @@@ START:SORRY @@@ -/
-  intros s t n m sxn sym swap_123
-  simp_all [swap]
-  cases swap_123; rename_i s1 swap_1 swap_23
-  cases swap_23; rename_i s2 swap_2 swap_3
-  cases swap_1; cases swap_2; cases swap_3
-  simp_all [aval, upd]
-/- @@@ END:SORRY@@@ -/
+  sorry
 
 /- @@@
 
@@ -421,6 +414,12 @@ Indeed, if we want `q` to be true *after* the assignment `x <~ a` then
 
 3. Except with all occurences of `x` (in `q`) replaced with `a` !
 
+```
+----------------------------- [ assign]
+{ q [ x := a ] } x <~ a { q }
+```
+
+
 ### Example: `Swap`
 
 Lets see how the rules for assignment and sequence work for our `swap` example from above.
@@ -470,7 +469,7 @@ must hold for `c1` and `c2` ? How about the rule
 
 ```
 ⊢ {P} c1 {Q}    ⊢ {P} c2 {Q}
--------------------------------- [If]
+-------------------------------- [If?]
 ⊢ {P} IF b THEN c1 ELSE c2 {Q}
 ```
 
@@ -494,6 +493,21 @@ Lets go back to the example
 -------------------------------------------------------------------------------- [If]
 ⊢ { true } IF (0 < x) THEN y <~ x ELSE y <~ 0 - x) { 0 <= y }
 ```
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 
 ### FH rules are too "tight"
@@ -937,64 +951,13 @@ conclude the triple `⊢ {{p}} c {{q}}` then that triple is in fact valid.
 
 @@@ -/
 
-theorem while_exit : (⟨ WHILE b DO c END, s ⟩ ==> t) -> bval b t = false := by
-  intro h
-  generalize h' : (WHILE b DO c END) = c' at h
-  induction h <;> try simp_all []
-
-theorem loop_sound {p : Assertion} :
-  (∀ {s t}, (p s /\ bval b s = true) -> (⟨ c, s ⟩ ==> t) -> (p t)) ->
-  (⟨ WHILE b DO c END, s ⟩ ==> t) ->
-  p s ->
-  p t := by
-  intros inv step ps
-  generalize bob : (WHILE b DO c END) = wbc at step
-  induction step <;> simp_all []
-  rename_i ih
-  apply ih
-  apply inv
-  apply ps
-  assumption
-  assumption
-
 theorem fh_sound :  ( ⊢ {{ p }} c {{ q }} ) -> ( ⊧ {{ p }} c {{ q }} )  := by
-  simp_all [Valid]
-  intro h s t ps step
-  induction h generalizing s t
-  . case Skip   => rename_i step ; cases step; assumption
-  . case Assign => intros; rename_i step ; cases step; assumption
-  . case Seq    => intros; rename_i ih1 ih2; cases step; apply ih2; apply ih1; repeat assumption
-  . case If =>
-    intros; rename_i ih1 ih2; cases step <;> simp_all []
-    . case IfTrue => apply ih1; repeat assumption
-    . case IfFalse => apply ih2; assumption; simp_all []; assumption
-  . case While =>
-    rename_i b c _ ih
-    generalize hh : (WHILE b DO c END) = wbc at step
-    apply And.intro
-    apply loop_sound
-    assumption
-    simp_all []
-    assumption
-    assumption
-    have bf : bval b t = false := by
-      apply while_exit
-      simp [<- hh] at step
-      apply step
-    simp_all []
-  . case CnsL =>
-    rename_i p' _ c _ _ p'p ih
-    apply ih; apply p'p; repeat assumption
-
-  . case CnsR =>
-    rename_i p c _ _ _ qq' ih
-    apply qq'; apply ih; repeat assumption
-
+  sorry
 /- @@@
 
 To recap: the Floyd-Hoare rules give us a sound way to construct proofs of programs,
 but, lets be honest, the construction is a real PITA.
 
 Next, lets see how to dramatically automate these proofs using **verification conditions**.
-
 @@@ -/
+
