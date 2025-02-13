@@ -368,12 +368,37 @@ For example, we have a rule for the `Skip` command that says
 ⊢ {P} SKIP {P}
 ```
 
+
 That is, for *any* assertion `p` we can derive that if `p` holds _before_ the `SKIP`
 then it must hold _after_ as well.
+
+
+### Rule: Assign
+
+```
+  ⊢ { y > 0 }    x <~ y   { x > 0 }
+
+  ⊢ { λ s => s y > 0 }    x <~ y   { λ s => (s x > 0) }
+
+    { λ s => q (s [ x := (aval y s) ]) }    x <~ y    { q }
+
+  --------------------------------------- [assign]
+  ⊢ { q [[ x := a ]] }    x <~ a    { q }
+```
 
 ### Rule: Sequence
 
 The rule for sequencing two commands `c1; c2` says that
+
+
+⊢ {p} c1 {tmp}    ⊢ {tmp} c2  {q}
+----------------------------------
+⊢ {p} c1; c2  {q}
+
+
+
+
+
 
 ```
 ⊢ {p} c1 {q}      ⊢ {q} c2 {r}
@@ -447,7 +472,7 @@ a triple `⊢ {p} IF cond THEN c1 ELSE c2 {q}`.
 Lets think about this triple:
 
 ```
-{ ??? }
+{ TRUE }
 
   IF 0 < x
 
@@ -615,21 +640,29 @@ Lets pick a simple example. How can we prove that after executing the loop below
 the value of `x` is non-negative?
 
 ```
-{{ True }}
+    {{ True }}
+    ⊆
+    {{ 1000 <= 1000 && 0 <= 0 }}
 
   i <~ 0;
 
-  x <~ 0;
+    {{ 1000 <= 1000 && 0 <= i }}
 
+  x <~ 1000;
+
+    {{ 1000 <= x && 0 <= i }}
   WHILE (i <= n) DO
+    {{ 1000 <= x && 0 <= i }}
+    ⊆
+    {{ 1000 <= x+i && 0 <= i+1 }}
 
     x <~ x + i;;
-
-    i <~ i - 1
-
+    {{ 1000 <= x && 0 <= i+1 }}
+    i <~ i + 1
+    {{ 1000 <= x && 0 <= i }}
   DONE
 
-{{ 0 <= x }}
+{{ 1000 <= x }}
 ```
 
 **Loop Invariants**
@@ -730,7 +763,7 @@ What, exactly, does it mean for `Q` to hold with the value of `x` replaced by `a
 
 
 ```lean
-notation:10 p "[[ " x ":=" a "]]" => fun s => p (s [ x := (aval a s) ])
+notation:10 q "[[ " x ":=" a "]]" => fun s => q (s [ x := (aval a s) ])
 ```
 
 
@@ -781,9 +814,6 @@ inductive FH : Assertion -> Com -> Assertion -> Prop where
                         FH (fun s => p s /\ bval b s) c p ->
                         FH p (While b c) (fun s => p s /\ ¬ bval b s)
 
-  -- | Cnsq              : ∀ {p' p c q q'},
-  --                       (p' ⊆ p) -> FH p c q -> (q ⊆ q') ->
-  --                       FH p' c q'
   | CnsL              : ∀ {p' p c q},
                         FH p c q ->
                         (p' ⊆ p) ->
@@ -945,7 +975,6 @@ is that we can now *prove* that we did not just make stuff up.
 That is, we can prove that the Floyd-Hoare logic is **sound** meaning that if we
 can only **derive valid triples** in the logic. That is, if the proof rules let us
 conclude the triple `⊢ {{p}} c {{q}}` then that triple is in fact valid.
-
 
 ```lean
 theorem fh_sound :  ( ⊢ {{ p }} c {{ q }} ) -> ( ⊧ {{ p }} c {{ q }} )  := by

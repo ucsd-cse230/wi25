@@ -45,6 +45,7 @@ inductive ACom where
   | Seq    : ACom  -> ACom -> ACom
   | If     : Bexp  -> ACom -> ACom -> ACom
   | While  : Assertion -> Bexp  -> ACom -> ACom
+
 open ACom
 
 /- @@@
@@ -108,15 +109,15 @@ def vc (c : ACom) (q : Assertion) : Prop :=
                         (∀ s, i s -> ¬ bval b s -> q s) /\
                         vc c i
 
-theorem vc_sound : vc c q -> (⊢ {{ wp c q }} (erase c) {{ q }})
+theorem vc_sound : vc c q -> (⊢ {| wp c q |} c {| q |})
   := by
   intros vcq
   induction c generalizing q
   . case Skip   => constructor
   . case Assign => constructor
-  . case Seq => sorry
-  . case If => sorry
-  . case While => sorry
+  . case Seq    => sorry
+  . case If     => sorry
+  . case While  => sorry
 
 /- ----------------------------------------------------------------------------------------------- -/
 
@@ -132,11 +133,26 @@ theorem vc'_sound : vc' p c q -> (⊢ {{ p }} (erase c) {{ q }}) := by
   apply vc1
 
 
+/- ----------------------------------------------------------------------------------------------- -/
+
+theorem ex_swap :
+  ⊢ {| λs => s x = a /\ s y = b |}
+      (z <~ x) ;;
+      (x <~ y) ;;
+      (y <~ z)
+    {| λs => s x = b /\ s y = a |}
+  := by
+  apply vc'_sound; simp_all [aval, upd]
+
+/- ----------------------------------------------------------------------------------------------- -/
+
 theorem ex1 : ⊢ {| tt |}
                   x <~ 5
                 {| λs => s x = 5 |}
   := by
   apply vc'_sound; simp_all [aval, upd]
+
+/- ----------------------------------------------------------------------------------------------- -/
 
 theorem ex2 : ⊢ {| λs => s x = 10 |}
                   (x <~ x + 1) ;;
@@ -145,13 +161,8 @@ theorem ex2 : ⊢ {| λs => s x = 10 |}
   := by
   apply vc'_sound; simp_all [aval, upd]
 
-theorem ex_swap : ⊢ {| λs => s x = a /\ s y = b |}
-                    (z <~ x) ;;
-                    (x <~ y) ;;
-                    (y <~ z)
-                    {| λs => s x = b /\ s y = a |}
-  := by
-  apply vc'_sound; simp_all [aval, upd]
+/- ----------------------------------------------------------------------------------------------- -/
+
 
 theorem ex4 : ⊢ {| tt |}
                 WHILE {-@ tt @-} true DO
@@ -162,16 +173,19 @@ theorem ex4 : ⊢ {| tt |}
   apply vc'_sound
   simp_all [aval, bval]
 
-theorem ex_loop : ⊢ {| tt |}
-                    (y <~ 0)
-                    ;;
-                    (x <~ 100)
-                    ;;
-                    (WHILE {-@ λ s => 100 <= s x /\ 0 <= s y @-} y << z DO
-                       ((x <~ x + y) ;;
-                        (y <~ y - 1))
-                    END)
-                    {| λ s => 100 <= s x |}
+/- ----------------------------------------------------------------------------------------------- -/
+
+theorem ex_loop :
+  ⊢ {| tt |}
+      (y <~ 0)
+      ;;
+      (x <~ 100)
+      ;;
+      (WHILE {-@ λ s => 100 <= s x /\ 0 <= s y @-} y << z DO
+         ((x <~ x + y) ;;
+          (y <~ y - 1))
+      END)
+    {| λ s => 100 <= s x |}
   := by
   apply vc'_sound
   simp_all [aval, bval, upd]
@@ -179,18 +193,18 @@ theorem ex_loop : ⊢ {| tt |}
   calc 100 <= s x       := by assumption
        _   <= s x + s y := by simp_arith []
 
-
-theorem imp_sum' : ⊢ {| λ s => s "x" = i |}
-                      (y <~ 0) ;;
-                      (WHILE {-@ wsum_inv i @-} (0 << x) DO
-                        (y <~ y + x) ;;
-                        (x <~ x - 1)
-                       END)
-                      {| λ s => s "y" = sum i |}
+theorem imp_sum' :
+  ⊢ {| λ s => s "x" = i |}
+      (y <~ 0) ;;
+      (WHILE {-@ wsum_inv i @-} (0 << x) DO
+        (y <~ y + x) ;;
+        (x <~ x - 1)
+       END)
+    {| λ s => s "y" = sum i |}
   := by
   apply vc'_sound
   simp_all [aval, bval, wsum_inv, upd]
-  apply And.intro <;> repeat (apply And.intro)
+  constructor <;> repeat constructor
   . case a.left =>
     intros
     rename_i s _ _

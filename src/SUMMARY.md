@@ -15,11 +15,8 @@
 - [Evidence](./lectures/L05Evidence.md)
 - [Big Step Semantics](./lectures/L06BigStep.md)
 - [Floyd-Hoare Logic](./lectures/L07Axiomatic.md)
+- [Verification Conditions](./lectures/L08VerificationConditions.md)
 - [Small Step Semantics]()
 - [Type Checking IMP]()
-- [Verification Conditions]()
 - [Simply Typed Lambda Calculus]()
 - [Type Checking STLC]()
-- [Automated Verification]()
-
-
