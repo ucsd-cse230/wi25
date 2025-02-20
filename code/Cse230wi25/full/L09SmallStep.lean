@@ -236,73 +236,73 @@ abbrev Steps := star SmallStep
 notation:12 cs "~~>" cs' => SmallStep cs cs'
 notation:12 cs "~~>*" cs' => Steps cs cs'
 
+/- @@@
+### Example: Skip
 
--- /- @@@
--- Lets revisit our old example with `c₀`
--- @@@ -/
+Lets show that a `Skip` cannot update the state.
+@@@ -/
 
--- def chain (r : α -> α -> Prop) (x0 : α) (xs : List α) (xn : α) : Prop :=
---   match xs with
---   | [] => x0 = xn
---   | x::xs' => r x0 x /\ chain r x xs' xn
-
-
--- theorem chain_trans : ∀ {α : Type} {r : α -> α -> Prop } {x z : α},
---   (∃ ys, chain r x ys z) -> star r x z
---   := by
---   intros α r x z ch_xz; cases ch_xz; rename_i ys ch_xz
---   induction ys generalizing x z <;> simp_all [chain]
---   . case nil  =>
---     intros; constructor
---   . case cons =>
---     rename_i y ys ih
---     cases ch_xz
---     apply star.step
---     assumption
---     apply ih
---     assumption
-
--- theorem trans_chain : ∀ {α : Type} {r : α -> α -> Prop } {x z : α},
---   star r x z -> (∃ ys, chain r x ys z)
---   := by
---   intros α r x z r_x_z
---   induction r_x_z
---   . case refl =>
---     exists []
---   . case step =>
---     rename_i x y z xy yz ih
---     cases ih
---     rename_i ys _
---     exists (y::ys)
-
--- theorem witness_trans : ∀ {α : Type} {r : α -> α -> Prop } {x z : α},
---   (∃ ys, chain r x ys z) <-> star r x z
---   := by intros α r x z; constructor; apply chain_trans; apply trans_chain
+@[simp]
+theorem skip_step : ∀ {s},
+  ((Skip, s) ~~>* (Skip, t)) <-> s=t
+  :=
+  by
+/-@@@ START:SORRY @@@-/
+  intros s
+  constructor
+  . case mp  =>
+    intros skip_s_t
+    cases skip_s_t
+    . case refl => rfl
+    . case step _ skip_s_y _ => cases skip_s_y
+  . case mpr =>
+    intros
+    simp_all []
+    apply star.refl
+/-@@@ END:SORRY @@@-/
 
 
--- example : ∃ c1 c2 c3 c4 c5 c6,
---   chain SmallStep (com₀, st₀) [c1, c2, c3, c4, c5, c6] (Skip, stₒ[ x := 10 ][ y := 11][ z := 13])
---   := by
---   apply Exists.intro
---   sorry
+/- @@@
+### Example: Assignments
 
--- @[simp]
--- theorem assign_step : ∀ {x a c s},
---   ((((x <~ a) ;; c), s) ~~> (Skip;;c, s [x := aval a s]))
---   :=
---   by sorry
+Lets show that an assignment `x <~ a` updates the state as follows:
+@@@ -/
 
+@[simp]
+theorem assign_step : ∀ {x a c s},
+  ((((x <~ a) ;; c), s) ~~>* (c, s [x := aval a s]))
+  :=
+  by
+/-@@@ START:SORRY @@@-/
+  intros x a c s
+  apply star.step
+  apply SmallStep.Seq2
+  constructor
+  apply star.step
+  apply SmallStep.Seq1
+  apply star.refl
+/-@@@ END:SORRY @@@-/
 
--- example : (com₀, st₀) ~~>* (Skip, stₒ[ x := 10 ][ y := 11][ z := 13]) := by
---    apply chain_trans
---    refine (Exists.intro [?c1, ?c2, ?c3, ?c4, ?c5, ?c6] ?horse)
---    rotate_right
---    and_intros
---    simp [chain, com₀]
---    apply assign_step
+/- @@@
 
---    apply SmallStep.Assign
---    constructor
+### Example: A Sequence of Assignments
+
+Lets revisit our old example with `(com₀, st₀) ~~>* ...`
+
+@@@ -/
+
+example : (com₀, st₀) ~~>* (Skip, st₀[ x := 10 ][ y := 11][ z := 13])
+  := by
+/-@@@ START:SORRY @@@-/
+  apply star_trans
+  apply assign_step
+  apply star_trans
+  apply assign_step
+  apply star_trans
+  apply star_one
+  constructor
+  simp [aval, upd]
+/-@@@ END:SORRY @@@-/
 
 /- @@@
 
@@ -371,14 +371,6 @@ It will be handy to have some `@[simp]` lemmas to simplify facts about the `BigS
   apply Iff.intro
   . case mp => intros h; cases h; repeat constructor; repeat assumption
   . case mpr => intros h; cases h; rename_i _ h12; cases h12; constructor; repeat assumption
-theorem steps_skip : ∀ {st cs},
-  ((Skip, st) ~~>* cs) -> cs = (Skip, st)
-  := by
-  intros st cs steps
-  cases steps
-  . case refl => simp_all []
-  . case step _ ih _ => cases ih
-
 
 /- @@@
 ### `SmallStep` implies `BigStep`

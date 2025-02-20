@@ -236,6 +236,46 @@ notation:12 cs "~~>" cs' => SmallStep cs cs'
 notation:12 cs "~~>*" cs' => Steps cs cs'
 ```
 
+### Example: Skip
+
+Lets show that a `Skip` cannot update the state.
+
+```lean
+@[simp]
+theorem skip_step : ∀ {s},
+  ((Skip, s) ~~>* (Skip, t)) <-> s=t
+  :=
+  by
+  sorry
+```
+
+
+### Example: Assignments
+
+Lets show that an assignment `x <~ a` updates the state as follows:
+
+```lean
+@[simp]
+theorem assign_step : ∀ {x a c s},
+  ((((x <~ a) ;; c), s) ~~>* (c, s [x := aval a s]))
+  :=
+  by
+  sorry
+```
+
+
+### Example: A Sequence of Assignments
+
+Lets revisit our old example with `(com₀, st₀) ~~>* ...`
+
+
+```lean
+example : (com₀, st₀) ~~>* (Skip, st₀[ x := 10 ][ y := 11][ z := 13])
+  := by
+  sorry
+```
+
+
 ## `SmallStep` is Deterministic
 
 Let us prove that the `~~>` relation is **deterministic**,
@@ -291,15 +331,7 @@ It will be handy to have some `@[simp]` lemmas to simplify facts about the `BigS
   apply Iff.intro
   . case mp => intros h; cases h; repeat constructor; repeat assumption
   . case mpr => intros h; cases h; rename_i _ h12; cases h12; constructor; repeat assumption
-theorem steps_skip : ∀ {st cs},
-  ((Skip, st) ~~>* cs) -> cs = (Skip, st)
-  := by
-  intros st cs steps
-  cases steps
-  . case refl => simp_all []
-  . case step _ ih _ => cases ih
 ```
-
 
 ### `SmallStep` implies `BigStep`
 
