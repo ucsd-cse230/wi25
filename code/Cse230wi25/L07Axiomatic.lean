@@ -989,4 +989,3 @@ but, lets be honest, the construction is a real PITA.
 
 Next, lets see how to dramatically automate these proofs using **verification conditions**.
 @@@ -/
-

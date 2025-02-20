@@ -427,6 +427,16 @@ abbrev ancestor_of := star parent_of
 example : ancestor_of alice alice := by
   sorry
 
+/- @@@
+Of course, we should be able to prove that if `r a b` then `star r a b`
+@@@ -/
+
+theorem star_one : ∀ { α : Type} { r: α -> α -> Prop} {a b : α},
+  r a b -> star r a b
+  := by
+  intros α r a b r_ab
+  apply step r_ab
+  apply refl
 
 /- @@@
 

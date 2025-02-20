@@ -16,7 +16,7 @@
 - [Big Step Semantics](./lectures/L06BigStep.md)
 - [Floyd-Hoare Logic](./lectures/L07Axiomatic.md)
 - [Verification Conditions](./lectures/L08VerificationConditions.md)
-- [Small Step Semantics]()
+- [Small Step Semantics](./lectures/L09SmallStep.md)
 - [Type Checking IMP]()
 - [Simply Typed Lambda Calculus]()
 - [Type Checking STLC]()

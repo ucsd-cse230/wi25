@@ -499,9 +499,16 @@ In fact, this **transitivity** fact should hold for *any* `star r`. Lets try to 
 
 @@@ -/
 
+theorem star_one : ∀ { α : Type} { r: α -> α -> Prop} {a b : α},
+  r a b -> star r a b
+  := by
+  intros α r a b r_ab
+  apply step r_ab
+  apply refl
+
 theorem star_trans : ∀ {α : Type} {r : α -> α -> Prop} {a b c : α},
-  star r a b -> star r b c -> star r a c :=
-  by
+  star r a b -> star r b c -> star r a c
+  := by
   intros α r a b c r_ab r_bc
   induction r_ab
   . case refl =>

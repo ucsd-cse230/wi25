@@ -87,7 +87,46 @@ of the **weakest precondition** `wp c q` which defines the
 the command `c` will yield a *final state* in which the
 assertion `q` is guaranteed to hold.
 
+
+wp (x <~ 10) (λ s => s x = 10)
+==
+(λ s => s x = 10) [[ x := a ]]
+==
+tt
+
+wp (x <~ 99 ;; x <~ 10) (λ s => s x = 10)
+=
+wp (x <~ 99) (wp (x <~ 10) (λ s => s x = 10))
+=
+wp (x <~ 99) tt
+=
+tt
+
+
 @@@ -/
+
+example : ((λ s => s x = 10) [[ x := 10 ]]) = tt := by
+  funext
+  simp [aval, upd, tt]
+
+example : ((λ s => s x = 10) [[ x := 10 ]]) = tt := by
+  funext
+  simp [aval, upd, tt]
+
+
+/-
+
+"weakest pre"
+
+     IF (vc c q) THEN ⊢ {{ wp c q }} c {{ q }}
+
+"side conditions"
+
+     (vc c q) : Prop
+
+
+-/
+
 
 @[simp]
 def wp (c: ACom) (q : Assertion) : Assertion :=
@@ -105,9 +144,17 @@ def vc (c : ACom) (q : Assertion) : Prop :=
   | ACom.Assign _ _  => True
   | ACom.Seq c1 c2   => vc c1 (wp c2 q) /\ (vc c2 q)
   | ACom.If _ c1 c2  => vc c1 q /\ vc c2 q
-  | ACom.While i b c => (∀ s, i s -> bval b s -> wp c i s) /\
-                        (∀ s, i s -> ¬ bval b s -> q s) /\
-                        vc c i
+  | ACom.While inv b c =>
+      (∀ s, inv s -> bval b s -> wp c inv s) /\ -- {inv /\ b} c { inv }
+      (∀ s, inv s -> ¬ bval b s -> q s) /\      -- (inv /\ ¬b) ⊆ q
+      vc c inv
+
+def ass_99: Assertion := λ s => s x = 10
+
+example : ((wp ((x <~ 99) ;; (x <~ 10)) ass_99) = tt) := by
+  funext
+  simp [wp, aval, upd, ass_99]
+
 
 theorem vc_sound : vc c q -> (⊢ {| wp c q |} c {| q |})
   := by

@@ -477,6 +477,16 @@ theorem star_trans : ∀ {α : Type} {r : α -> α -> Prop} {a b c : α},
   case step a x b r_ax _ ih => simp_all [step r_ax]
 /- @@@ END:SORRY @@@ -/
 
+/- @@@
+Of course, we should be able to prove that if `r a b` then `star r a b`
+@@@ -/
+
+theorem star_one : ∀ { α : Type} { r: α -> α -> Prop} {a b : α},
+  r a b -> star r a b
+  := by
+  intros α r a b r_ab
+  apply step r_ab
+  apply refl
 
 /- @@@
 
