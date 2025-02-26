@@ -77,11 +77,92 @@ x <~ 10;; y <~ x + 1 ;; z <~ y + 2
 
 What do you think the sequence of configurations `c₀ -> ...` might look like?
 
+```
+[ x := 0, y := 0, z := 0 ]
+
+(y <~ 12 ;;
+z <~ 1000 ;;
+(IF 100 < x THEN y <~ y+10 ELSE z <~ z+20)
+```
+
+y <~ 12
+
+```
+[ x := 0, y := 12, z := 0 ]
+
+z <~ 1000 ;;
+(IF 100 < x THEN y <~ y+10 ELSE z <~ z+20)
+```
+
+z <~ 1000
+
+```
+[ x := 0, y := 12, z := 1000 ]
+
+(IF 100 < x THEN y <~ y+10 ELSE z <~ z+20)
+```
+
+
+```
+[ x := 0, y := 0, z := 0 ]
+
+(y <~ 12 ;; z <~ 1000)
+;;
+(IF 100 < x THEN y <~ y+10 ELSE z <~ z+20)
+```
+"break parens"
+~~>
+
+
+------------------------------------------------------------
+
+{ (x <~ 10 ;; y <~ x+1) | [x := 0, y:=0] }
+
+~~> assign+semicolon
+
+{ (Skip ;; y <~ x+1)    | [x := 10, y:=0] }
+
+~~> skip
+
+{ (y <~ x+1)            | [x := 10, y:=0] }
+
+~~> assign
+
+{ Skip                  | [x := 10, y:=11] }
 
 
 
 
 
+
+
+RULES
+
+
+--------------------------------------- [skip]
+{ SKIP ;; REST | s } ~~> { REST | s }
+
+
+{ c | s } ~~> { c' | s' }
+------------------------------------------------------------ [semicolon]
+{ (c ;; REST) | s } ~~> { ( c' ;; REST ) | s' }
+
+
+------------------------------------------------------------ [assign]
+{ (x <~ a ) | s } ~~> { Skip | s [ x := aval a s ] }
+
+
+bval b s = true
+--------------------------------------------------- [if-true]
+{ (IF b c1 c2) | s } ~~> { c1  | s}
+
+
+bval b s = false
+--------------------------------------------------- [if-true]
+{ (IF b c1 c2) | s } ~~> { c2 | s}
+
+-----------------------------------------------------------[while]
+{ (WHILE b c) | s } ~~> { IF b (c ;; WHILE b c) Skip | s }
 
 
 
@@ -151,54 +232,51 @@ above the line holds, *then* the stuff below the line holds as well.
 **Skip**
 
 ```
-???
 ------------------------- [skip]
-(Skip, s) -> ???
+(Skip;;c, s) -> (c, s)
 ```
 
 **Assign**
 
 ```
-???
-------------------------- [assign]
-(x <~ a, s) -> ???
+----------------------------------------- [assign]
+(x <~ a, s) -> (Skip, s [x := aval a s])
 ```
 
 **Sequence**
 
 ```
-???
-------------------------- [seq]
-(c1;;c2, s) -> ???
+(c1, s) ~~> (c1', s')
+------------------------------- [seq]
+(c1;;c2, s) -> (c1';;c2 , s')
 ```
 
 **If**
 
 ```
 bval b s = true
---------------------------------- [if-true]
-(IF b THEN c1 ELSE c2, s) -> ???
+------------------------------------ [if-true]
+(IF b THEN c1 ELSE c2, s) -> (c1, s)
 ```
 
 ```
 bval b s = false
---------------------------------- [if-false]
-(IF b THEN c1 ELSE c2, s) -> ???
+------------------------------------ [if-false]
+(IF b THEN c1 ELSE c2, s) -> (c2, s)
 ```
 
 **While**
 
 ```
-???
--------------------------- [while]
-(WHILE b DO c, s) -> ???
+-------------------------------------------------- [while]
+(WHILE b DO c, s) -> (IF b (c;;WHILE b c) Skip, s)
 ```
 
 Next, lets formulate the above as an `inductive SmallStep` relation:
 
 @@@ -/
 
-inductive SmallStep : (Com × State) -> (Com × State) -> Prop where
+inductive SmallStep : Configuration -> Configuration -> Prop where
    | Assign : ∀ {x a s},
                 SmallStep (x <~ a, s) (Skip, s [x := aval a s])
    | Seq1   : ∀ {c s},
@@ -234,16 +312,36 @@ inductive star {α : Type} (r: α -> α -> Prop) : α -> α -> Prop where
 abbrev Steps := star SmallStep
 
 notation:12 cs "~~>" cs' => SmallStep cs cs'
-notation:12 cs "~~>*" cs' => Steps cs cs'
+notation:12 cs "~~>*" cs' => star SmallStep cs cs'
 
 /- @@@
 ### Example: Skip
 
-Lets show that a `Skip` cannot update the state.
+Lets show that a `Skip` cannot change the state.
+
+
+
+
+
+
+
+
+
 @@@ -/
 
+theorem skip_not_change : ∀ {c s t},
+  ((Skip, s) ~~>* (c, t)) -> s = t
+  := by
+  intros c s t skip_steps
+  cases skip_steps
+  . case refl => rfl
+  . case step => contradiction
+
+
+
+
 @[simp]
-theorem skip_step : ∀ {s},
+theorem skip_step : ∀ {s t},
   ((Skip, s) ~~>* (Skip, t)) <-> s=t
   :=
   by
@@ -253,15 +351,17 @@ theorem skip_step : ∀ {s},
 /- @@@
 ### Example: Assignments
 
-Lets show that an assignment `x <~ a` updates the state as follows:
+Lets show that an assignment
+`x <~ a` updates the state as follows:
 @@@ -/
 
 @[simp]
-theorem assign_step : ∀ {x a c s},
-  ((((x <~ a) ;; c), s) ~~>* (c, s [x := aval a s]))
+theorem assign_step : ∀ {x a REST s},
+  ((((x <~ a) ;; REST), s) ~~>* (REST, s [x := aval a s]))
   :=
   by
-  sorry
+  intros x a REST s
+  repeat constructor
 
 /- @@@
 
@@ -573,4 +673,3 @@ theorem bigstep_implies_smallstep : ∀ {c s t},
       assumption
 
 ----------------------------------------------------------------------------------------------
-
