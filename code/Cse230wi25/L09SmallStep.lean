@@ -200,7 +200,7 @@ Lets return to our original example:
 
 @@@ -/
 
-abbrev com₀ : Com := x <~ 10;; (y <~ x + 1 ;; z <~ y + 2)
+abbrev com₀ : Com := x <~ 10;; (y <~ x + 1 ;; (z <~ y + 2 ;; Skip))
 
 /- @@@
 Suppose we want to execute the program from some starting
@@ -274,22 +274,59 @@ bval b s = false
 
 Next, lets formulate the above as an `inductive SmallStep` relation:
 
+
+((x<~10;; y <~20) ;; z <~ 30) ;; (a <~ 100) | s
+
+~>
+
+((SKIP;; y <~20) ;; z <~ 30) ;; (a <~ 100) | s[x:=10]
+
+~>
+
+(y <~20 ;; z <~ 30) ;; (a <~ 100) | s[x:=10]
+
+~>
+
+(SKIP ;; z <~ 30) ;; (a <~ 100) | s[x:=10][y:=20]
+
+~>
+
+(z <~ 30) ;; (a <~ 100) | s[x:=10][y:=20]
+~>
+
+SKIP ;; (a <~ 100) | s[x:=10][y:=20][z:=30]
+
+~>
+
+(a <~ 100) | s[x:=10][y:=20][z:=30]
+
+~>
+
+SKIP | s[x:=10][y:=20][z:=30][a:=100]
+
+
+
 @@@ -/
 
 inductive SmallStep : Configuration -> Configuration -> Prop where
    | Assign : ∀ {x a s},
                 SmallStep (x <~ a, s) (Skip, s [x := aval a s])
+
    | Seq1   : ∀ {c s},
                 SmallStep ((Skip ;; c), s) (c, s)
+
    | Seq2   : ∀ {c1 c1' c2 s s'},
                 SmallStep (c1, s) (c1', s') ->
                 SmallStep ((c1 ;; c2) , s) ((c1' ;; c2), s')
+
    | IfTrue : ∀ {b c1 c2 s},
                 bval b s == true ->
                 SmallStep (IF b THEN c1 ELSE c2, s) (c1, s)
+
    | IfFalse : ∀ {b c1 c2 s},
                 bval b s == false ->
                 SmallStep (IF b THEN c1 ELSE c2, s) (c2, s)
+
    | While   : ∀ { b c s },
                 SmallStep (Com.While b c, s) (Com.If b (c ;; (Com.While b c)) Skip, s)
 
@@ -334,9 +371,10 @@ theorem skip_not_change : ∀ {c s t},
   := by
   intros c s t skip_steps
   cases skip_steps
-  . case refl => rfl
-  . case step => contradiction
-
+  . case refl =>
+    trivial
+  . case step _ blah _ =>
+    contradiction
 
 
 
@@ -360,8 +398,9 @@ theorem assign_step : ∀ {x a REST s},
   ((((x <~ a) ;; REST), s) ~~>* (REST, s [x := aval a s]))
   :=
   by
-  intros x a REST s
+  intros
   repeat constructor
+
 
 /- @@@
 
@@ -369,11 +408,16 @@ theorem assign_step : ∀ {x a REST s},
 
 Lets revisit our old example with `(com₀, st₀) ~~>* ...`
 
+star_trans: star r x y -> star r y z -> star r x z
+
 @@@ -/
 
 example : (com₀, st₀) ~~>* (Skip, st₀[ x := 10 ][ y := 11][ z := 13])
   := by
-  sorry
+  apply star_trans; apply assign_step
+  apply star_trans; apply assign_step
+  apply star_trans; apply assign_step
+  simp_all [aval, upd]
 
 /- @@@
 
@@ -391,8 +435,23 @@ theorem smallstep_deterministic : ∀ {cs cs1 cs2},
   (cs ~~> cs1) -> (cs ~~> cs2) -> cs1 = cs2
   := by
   intros cs cs1 cs2 step1 step2
-  induction step1 generalizing cs2 <;> cases step2 <;>
-  sorry
+  induction step1 generalizing cs2
+  . case Assign =>
+    cases step2; trivial
+  . case Seq1 =>
+    cases step2
+    trivial
+    contradiction
+  . case Seq2 c1 c1' c2 s s' step1 ih =>
+    cases step2
+    contradiction
+    rename_i c1'' s'' _
+    have foo : (c1', s')= (c1'', s'')  := by
+     apply ih; trivial
+    simp_all
+  . case IfTrue => sorry
+  . case IfFalse => sorry
+  . case While => sorry
 
 /- @@@
 
@@ -413,14 +472,14 @@ It will be handy to have some `@[simp]` lemmas to simplify facts about the `BigS
 
 @@@ -/
 
-@[simp] theorem BigStep_skip_Iff : ∀ {s t},
+theorem BigStep_skip_Iff : ∀ {s t},
   (⟨ Skip, s ⟩ ==> t) <-> (s = t) :=
   by
   intros s t; constructor
   . case mp  => intro h; cases h; simp_all []
   . case mpr => intros; simp_all []; constructor
 
-@[simp] theorem BigStep_assign_Iff: ∀ {x a s t},
+theorem BigStep_assign_Iff: ∀ {x a s t},
   (⟨ x <~ a, s ⟩ ==> t) <-> (t = (s[x := aval a s]))
   := by
   intros x a s t
@@ -428,7 +487,7 @@ It will be handy to have some `@[simp]` lemmas to simplify facts about the `BigS
   . case mp  => intro h; cases h; simp_all []
   . case mpr => intros; simp_all []; constructor
 
-@[simp] theorem BigStep_seq_Iff: ∀ {c1 c2 s t},
+theorem BigStep_seq_Iff: ∀ {c1 c2 s t},
   (⟨ c1 ;; c2, s ⟩ ==> t) <-> (∃ s', (⟨ c1, s ⟩ ==> s') ∧ (⟨ c2, s' ⟩ ==> t)) := by
   intros c1 c2 s t
   apply Iff.intro
@@ -445,9 +504,10 @@ then, in a **single big step** we have `⟨ c, s ⟩ ==> t`.
 The only way to do so will be an induction on the *sequence of small steps*.
 @@@ -/
 
-theorem smallstep_implies_bigstep_stuck : ∀ {c s t},
+theorem smallstep_implies_bigstep' : ∀ {c s t},
   ((c, s) ~~>* (Skip, t)) -> (⟨ c, s ⟩ ==> t)  := by
   intros c s t steps
+
   generalize h1 : (c, s)    = c_s    at steps --- this is ANF / Nico's tip
   generalize h2 : (Skip, t) = skip_t at steps --- this is ANF / Nico's tip
   induction steps generalizing c s t
@@ -455,6 +515,7 @@ theorem smallstep_implies_bigstep_stuck : ∀ {c s t},
       cases h1
       cases h2
       constructor
+
   . case step cs cs1 skip_t step_head step_tail ih =>
       cases h1
       cases h2
@@ -482,23 +543,24 @@ What should that lemma *say*?
 @@@ -/
 
 theorem step_case : ∀ {c c' s s' t},
+
   ((c, s) ~~> (c', s')) -> (⟨ c', s' ⟩ ==> t) -> (⟨ c, s ⟩ ==> t)
+
   := by
   intros c c' s s' t step1 bigstep
-  generalize h1 : (c, s)   = cs at step1 --- this is ANF / Nico's tip
+  generalize h1 : (c, s)   = cs  at step1 --- this is ANF / Nico's tip
   generalize h2 : (c', s') = cs' at step1 --- this is ANF / Nico's tip
   induction step1 generalizing c c' s s' t <;> cases h1 <;> cases h2
   . case Assign x a s =>
-      simp_all []
+      simp_all [BigStep_assign_Iff, BigStep_skip_Iff]
   . case Seq1 c s =>
-      constructor
-      constructor
+      repeat constructor
       assumption
-  . case Seq2 c1 c1' c2 s s' _hyp step_c1 =>
+  . case Seq2 c1 c1' c2 s s' _ ih1 =>
       cases bigstep
       rename_i st2 c1'_s'_st2' c2_st2
       constructor
-      apply step_c1
+      apply ih1
       apply c1'_s'_st2'
       repeat simp_all []
   . case IfTrue b c1 c2 s hyp =>
@@ -514,7 +576,7 @@ theorem step_case : ∀ {c c' s s' t},
       cases bv
       -- bv = false
       cases bigstep
-      repeat simp_all []
+      repeat simp_all
       apply BigStep.WhileFalse
       assumption
       -- bv = true
@@ -526,14 +588,15 @@ theorem step_case : ∀ {c c' s s' t},
       cases hh
       apply BigStep.WhileTrue
       repeat assumption
-      simp_all []
+      simp_all
 
 /- @@@
 We can now use the above lemma to complete the proof of the `smallstep_implies_bigstep` theorem.
 @@@ -/
 
 
-theorem smallstep_implies_bigstep : ∀ {c s t}, ((c, s) ~~>* (Skip, t)) -> (⟨ c, s ⟩ ==> t)  := by
+theorem smallstep_implies_bigstep : ∀ {c s t},
+  ((c, s) ~~>* (Skip, t)) -> (⟨ c, s ⟩ ==> t)  := by
   intros c s t steps
   generalize h1 : (c, s)    = c_s    at steps --- this is ANF / Nico's tip
   generalize h2 : (Skip, t) = skip_t at steps --- this is ANF / Nico's tip
@@ -555,11 +618,17 @@ Next, lets try to prove the other direction that
 IF in a **single big step** we have `⟨ c, s ⟩ ==> t`.
 THEN using **many small steps** we have `(c, s) ~~>* (Skip, t)`.
 
+<c1, s> ==> s'   <c2, s'> ==> t
+--------------------------------
+<c1;;c2 , s > ==> t
+
+
+
 Of course, this proof will be by induction on the `BigStep` derivation.
 @@@ -/
 
 
-theorem bigstep_implies_smallstep' : ∀ {c s t},
+theorem bigstep_implies_smallstep_stuck : ∀ {c s t},
   (⟨ c, s ⟩ ==> t) -> ((c, s) ~~>* (Skip, t))
   := by
   intros c s t bs
@@ -585,6 +654,7 @@ theorem bigstep_implies_smallstep' : ∀ {c s t},
 Uh oh, in the `Seq` case we get stuck because
 
 - we have `⟨ c1, s ⟩ ==> s1`, which implies `(c1, s)  ~~>* (Skip, s1)` (by the IH)
+                                            `(c1;; c2, s ) ~~>* (Skip;;c2, s1) ~> (c2,s1) ~~>* (Skip, t)`
 - we have `⟨ c2, s1 ⟩ ==> t`, which implies `(c2, s1) ~~>* (Skip, t)`  (by the IH)
 
 But we need to **join the `SmallStep` sequences** for `c1` and `c2` to get one for `c1;;c2`.
@@ -649,7 +719,7 @@ theorem bigstep_implies_smallstep : ∀ {c s t},
     constructor
   . case Assign s x a =>
     apply star.step; constructor; apply star.refl
-  . case Seq c1 c2 st1 st2 st3 _ _ sc1 sc2 =>
+  . case Seq sc1 sc2 =>
       apply star_trans
       apply seq_steps
       apply sc1
@@ -660,10 +730,10 @@ theorem bigstep_implies_smallstep : ∀ {c s t},
       constructor; apply SmallStep.IfTrue; simp_all []; assumption
   . case IfFalse =>
       constructor; apply SmallStep.IfFalse; simp_all []; assumption
-  . case WhileFalse b c st b_false =>
+  . case WhileFalse =>
       apply star.step; constructor; apply star_one; constructor; simp_all []
   . case WhileTrue =>
-      rename_i b c st st1 st2 _ _ _ c_steps ih
+      rename_i c_steps _
       apply star.step; constructor
       apply star.step; constructor
       simp_all []
