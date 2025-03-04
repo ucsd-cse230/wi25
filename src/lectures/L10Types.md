@@ -373,6 +373,7 @@ apply for each kind of expression. (Why?)
 Γ ⊢ a1 + a2 : ???
 ```
 
+which we can specify as an `inductive` predicate:
 
 
 ```lean
@@ -402,12 +403,15 @@ notation:10 Γ " ⊢ " a " : " τ => HasTyA Γ a τ
 
 Let us check our example
 
+```
+
                       -------------[int]    -------------[var]
                       Γᵢ ⊢ 10 : int         Γᵢ ⊢ y : int
 ------------[var]     -----------------------------------[addI]
 Γᵢ ⊢ x : int          Γᵢ ⊢ (10 + y) : int
 -----------------------------------------[addI]
 Γᵢ ⊢ x + (10 + y) : int
+```
 
 Lets see why having **syntax directed** rules is useful!
 
@@ -444,6 +448,8 @@ Next, lets work out the rules for `Bexp` -- here we can just write
 --------------------[less]
 Γ ⊢ a1 < a2 : ???
 ```
+
+Lets formalize the above as an `inductive` predicate:
 
 
 ```lean
@@ -487,10 +493,13 @@ What does the **typing judgment** for a command look like?
 
 Should the following hold?
 
+**(1)**
+
 ```
 Γᵢ ⊢ x <~ 10 ;; Skip ;; y <~ 10 ;; z <~ x + y
 ```
 
+**(2)**
 
 ```
 Γᵢ ⊢ x <~ 10 ;; Skip ;; y <~ 1.0 ;; z <~ x + y
@@ -498,6 +507,32 @@ Should the following hold?
 
 What should the rules look like so that we can establish / reject appropriately?
 
+
+```
+???
+---------------[skip]
+Γ ⊢ skip
+
+
+???
+---------------[assign]
+Γ ⊢ x <~ a
+
+
+???
+-------------------[seq]
+Γ ⊢ c1 ;; c2
+
+???
+-------------------------[if]
+Γ ⊢ if b then c1 else c2
+
+???
+-------------------------[while]
+Γ ⊢ while b do c
+```
+
+Lets define the above as an `inductive` predicate
 
 
 ```lean
@@ -528,7 +563,6 @@ example : Γᵢ ⊢ "x" <~ Ic 3 ;; "y" <~ (V "x") + (Ic 4) := by
   repeat constructor
 ```
 
-
 ## Type Soundness
 
 Ok great, so we made up a system of "type checking" rules.
@@ -552,17 +586,17 @@ Ultimately, we want to **prove** that
 
 But how can we state this property precisely as a theorem?
 
-
-
 **Preservation** If the program does something THEN that thing is *expected* or *predicted*
 
 **Progress** The program *does* something.
 
 
 
+Let's try to formalize this in Lean,
 
-
-Let's try to formalize this in Lean, for *arith* expressions, *bool* expressions and then *commands*.
+1. for *arith* expressions,
+2. for *bool* expressions and then,
+3. for *commands*.
 
 
 ### Types and their Values
@@ -575,7 +609,6 @@ First, let us write down the relationship between each **value** and its corresp
   | Iv _ => TInt
   | Fv _ => TFloat
 ```
-
 
 A `State` `s` is **well-formed** with respect to a type environment `Γ` if every variable's value in `s`
 is that specified in `Γ`
@@ -755,8 +788,6 @@ theorem bool_progress: ∀ { Γ s } { b : Bexp },
     have h1 : ∃ v1, Taval a1 s v1 := by apply arith_progress; repeat assumption
     have h2 : ∃ v2, Taval a2 s v2 := by apply arith_progress; repeat assumption
     cases h1; cases h2; apply less_progress; repeat assumption
-
--------------------
 ```
 
 ### Commands
@@ -788,7 +819,6 @@ If the `Com`  does `__________________________` THEN `__________________________
 
   __________________________________________
 ```
-
 
 
 #### Commands: Preservation
